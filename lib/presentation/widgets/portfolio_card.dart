@@ -44,6 +44,11 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
     );
   }
 
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
