@@ -11,6 +11,14 @@ class AppRouter {
   static final rootNavigatorKey = GlobalKey<NavigatorState>();
   static final shellNavigatorKey = GlobalKey<NavigatorState>();
 
+  static Widget _withTitle(String title, Widget child) {
+    return Title(
+      title: '$title | Ubaid Ullah',
+      color: const Color(0xFF6C63FF),
+      child: child,
+    );
+  }
+
   static final router = GoRouter(
     initialLocation: '/',
     navigatorKey: rootNavigatorKey,
@@ -29,7 +37,7 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/home',
-                builder: (context, state) => const PortfolioHomePage(),
+                builder: (context, state) => _withTitle('Home', const PortfolioHomePage()),
               ),
             ],
           ),
@@ -37,7 +45,7 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/projects',
-                builder: (context, state) => const ProjectsPage(),
+                builder: (context, state) => _withTitle('Projects', const ProjectsPage()),
               ),
             ],
           ),
@@ -45,7 +53,7 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/experience',
-                builder: (context, state) => const ExperiencePage(),
+                builder: (context, state) => _withTitle('Experience', const ExperiencePage()),
               ),
             ],
           ),
@@ -53,7 +61,7 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/skills',
-                builder: (context, state) => const SkillsPage(),
+                builder: (context, state) => _withTitle('Skills', const SkillsPage()),
               ),
             ],
           ),
@@ -61,7 +69,7 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/contact',
-                builder: (context, state) => const ContactPage(),
+                builder: (context, state) => _withTitle('Contact', const ContactPage()),
               ),
             ],
           ),
@@ -81,8 +89,6 @@ class PortfolioScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // This scaffold will host the navigation shell.
-    // The individual pages still contain their own AppBars to preserve the existing UI design.
     return Scaffold(
       body: navigationShell,
     );

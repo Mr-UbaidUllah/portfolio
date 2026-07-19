@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
-import '../pages/contact_page.dart';
-import '../pages/projects_page.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/app_breakpoints.dart';
 import 'available_badge.dart';
 
 class PortfolioCard extends StatefulWidget {
@@ -46,8 +47,11 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 800;
-    final cardWidth = isMobile ? size.width * 0.9 : 1100.0;
+    final isMobile = AppBreakpoints.isMobile(size.width);
+    // Fixed: Use math.min to ensure cardWidth never exceeds screen width
+    final cardWidth = isMobile ? size.width * 0.95 : math.min(size.width * 0.9, 1100.0);
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
 
     return MouseRegion(
       onEnter: (_) => _isHovered.value = true,
@@ -59,6 +63,7 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
       child: ValueListenableBuilder<Offset>(
         valueListenable: _tiltOffset,
         builder: (context, tilt, child) {
+          if (reduceMotion) return child!;
           return TweenAnimationBuilder<Offset>(
             duration: const Duration(milliseconds: 200),
             tween: Tween(begin: Offset.zero, end: tilt),
@@ -85,9 +90,9 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6C63FF).withValues(alpha: hovered ? 0.2 : 0.05),
+                    color: const Color(0xFF6C63FF).withValues(alpha: hovered && !reduceMotion ? 0.2 : 0.05),
                     blurRadius: 100,
-                    spreadRadius: hovered ? 20 : 10,
+                    spreadRadius: hovered && !reduceMotion ? 20 : 10,
                   ),
                 ],
               ),
@@ -96,7 +101,7 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                   child: Container(
-                    padding: EdgeInsets.all(isMobile ? 32 : 64),
+                    padding: EdgeInsets.all(isMobile ? 24 : 64),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0D0D1E).withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(40),
@@ -141,7 +146,7 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
       _AnimatedGradientText(
         text: 'Ubaid Ullah',
         style: TextStyle(
-          fontSize: isMobile ? 40 : 72,
+          fontSize: isMobile ? 36 : 72, // Reduced mobile font size
           fontWeight: FontWeight.w900,
           letterSpacing: -1.5,
         ),
@@ -162,14 +167,28 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
         textAlign: isMobile ? TextAlign.center : TextAlign.start,
         style: TextStyle(
           color: Colors.white.withValues(alpha: 0.6),
-          fontSize: isMobile ? 16 : 20,
+          fontSize: isMobile ? 15 : 20, // Reduced mobile font size
           height: 1.6,
           fontWeight: FontWeight.w300,
         ),
       ).animate().fadeIn(duration: 800.ms, delay: 600.ms).slideY(begin: 0.1),
-      const SizedBox(height: 56),
+      const SizedBox(height: 48), // Adjusted height
       isMobile
-          ? Column(children: _buildButtons(context))
+          ? Column(
+              children: [
+                _PremiumButton(
+                  text: 'View Projects',
+                  isPrimary: true,
+                  onPressed: () => context.go('/projects'),
+                ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
+                const SizedBox(height: 16),
+                _PremiumButton(
+                  text: 'Contact Me',
+                  isPrimary: false,
+                  onPressed: () => context.go('/contact'),
+                ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2),
+              ],
+            )
           : Row(
               children: _buildButtons(context)
                   .expand((w) => [w, const SizedBox(width: 24)])
@@ -185,92 +204,98 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
       _PremiumButton(
         text: 'View Projects',
         isPrimary: true,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ProjectsPage()),
-          );
-        },
+        onPressed: () => context.go('/projects'),
       ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
       _PremiumButton(
         text: 'Contact Me',
         isPrimary: false,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ContactPage()),
-          );
-        },
+        onPressed: () => context.go('/contact'),
       ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2),
     ];
   }
 
   Widget _buildImage(bool isMobile) {
-    return AnimatedBuilder(
-      animation: _floatController,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, 15 * math.sin(_floatController.value * 2 * math.pi)),
-          child: child,
-        );
-      },
-      child: Center(
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            // Orbiting Icons
-            if (!isMobile) ...[
-              const _OrbitingIcon(icon: Icons.flutter_dash, angle: 0, color: Color(0xFF02539A)),
-              const _OrbitingIcon(icon: Icons.code, angle: 72, color: Color(0xFF6C63FF)),
-              const _OrbitingIcon(icon: Icons.design_services, angle: 144, color: Color(0xFFBEB6FF)),
-              const _OrbitingIcon(icon: Icons.storage, angle: 216, color: Color(0xFF00FF94)),
-              const _OrbitingIcon(icon: Icons.bolt, angle: 288, color: Colors.yellow),
-            ],
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+    final imageSize = isMobile ? 220.0 : 380.0; // Responsive image size
 
-            // Animated glowing rings
-            ...List.generate(2, (index) => 
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _floatController,
+        builder: (context, child) {
+          if (reduceMotion) return child!;
+          return Transform.translate(
+            offset: Offset(0, 15 * math.sin(_floatController.value * 2 * math.pi)),
+            child: child,
+          );
+        },
+        child: Center(
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              // Orbiting Icons
+              if (!isMobile && !reduceMotion) ...[
+                const _OrbitingIcon(icon: Icons.flutter_dash, angle: 0, color: Color(0xFF02539A)),
+                const _OrbitingIcon(icon: Icons.code, angle: 72, color: Color(0xFF6C63FF)),
+                const _OrbitingIcon(icon: Icons.design_services, angle: 144, color: Color(0xFFBEB6FF)),
+                const _OrbitingIcon(icon: Icons.storage, angle: 216, color: Color(0xFF00FF94)),
+                const _OrbitingIcon(icon: Icons.bolt, angle: 288, color: Colors.yellow),
+              ],
+      
+              // Animated glowing rings
+              ...List.generate(2, (index) => 
+                Container(
+                  width: imageSize + (index * 40),
+                  height: imageSize + (index * 40),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF6C63FF).withValues(alpha: 0.2 / (index + 1)),
+                      width: 2,
+                    ),
+                  ),
+                )
+                .animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat())
+                .scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: (2 + index).seconds, curve: Curves.easeInOut)
+                .fadeOut(duration: (2 + index).seconds),
+              ),
+              
               Container(
-                width: (isMobile ? 240 : 380) + (index * 40),
-                height: (isMobile ? 240 : 380) + (index * 40),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFF6C63FF).withValues(alpha: 0.2 / (index + 1)),
-                    width: 2,
+                  borderRadius: BorderRadius.circular(40),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6C63FF).withValues(alpha: 0.4),
+                      blurRadius: 60,
+                      spreadRadius: 10,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(40),
+                  child: Semantics(
+                    label: 'Profile image of Ubaid Ullah',
+                    child: Image.asset(
+                      'assets/images/profileImage.png',
+                      height: isMobile ? 280 : 480,
+                      width: isMobile ? 220 : 380,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: isMobile ? 280 : 480,
+                        width: isMobile ? 220 : 380,
+                        color: Colors.white10,
+                        child: const Icon(Icons.person, size: 80),
+                      ),
+                    ),
                   ),
                 ),
-              )
-              .animate(onPlay: (c) => c.repeat())
-              .scale(begin: const Offset(1, 1), end: const Offset(1.2, 1.2), duration: (2 + index).seconds, curve: Curves.easeInOut)
-              .fadeOut(duration: (2 + index).seconds),
-            ),
-            
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(40),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF6C63FF).withValues(alpha: 0.4),
-                    blurRadius: 60,
-                    spreadRadius: 10,
-                  ),
-                ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(40),
-                child: Image.asset(
-                  'assets/images/profileImage.png',
-                  height: isMobile ? 300 : 480,
-                  width: isMobile ? 240 : 380,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    ).animate().fadeIn(duration: 1.seconds, delay: 400.ms).scale(begin: const Offset(0.8, 0.8));
+      ).animate().fadeIn(duration: 1.seconds, delay: 400.ms).scale(begin: const Offset(0.8, 0.8)),
+    );
   }
 }
 
@@ -337,6 +362,10 @@ class _AnimatedGradientTextState extends State<_AnimatedGradientText> with Singl
 
   @override
   Widget build(BuildContext context) {
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+    if (reduceMotion) return Text(widget.text, style: widget.style.copyWith(color: Colors.white));
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -375,43 +404,65 @@ class _TypewriterTextState extends State<_TypewriterText> {
   int _textIndex = 0;
   int _charIndex = 0;
   bool _isDeleting = false;
-  late Duration _typingSpeed;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _typingSpeed = const Duration(milliseconds: 100);
-    _type();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _type());
   }
 
   void _type() {
     if (!mounted) return;
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+    
+    if (reduceMotion) {
+      setState(() {
+        _charIndex = widget.texts[_textIndex].length;
+      });
+      return;
+    }
+
     final currentText = widget.texts[_textIndex];
     setState(() {
       if (_isDeleting) {
         _charIndex--;
-        _typingSpeed = const Duration(milliseconds: 50);
       } else {
         _charIndex++;
-        _typingSpeed = const Duration(milliseconds: 100);
       }
     });
+
+    Duration delay = const Duration(milliseconds: 100);
+    
     if (!_isDeleting && _charIndex == currentText.length) {
+      delay = const Duration(seconds: 2);
       _isDeleting = true;
-      _typingSpeed = const Duration(seconds: 2);
     } else if (_isDeleting && _charIndex == 0) {
       _isDeleting = false;
       _textIndex = (_textIndex + 1) % widget.texts.length;
-      _typingSpeed = const Duration(milliseconds: 500);
+      delay = const Duration(milliseconds: 500);
+    } else if (_isDeleting) {
+      delay = const Duration(milliseconds: 50);
     }
-    Future.delayed(_typingSpeed, _type);
+
+    _timer = Timer(delay, _type);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '${widget.texts[_textIndex].substring(0, _charIndex)}_',
-      style: widget.style,
+    return Semantics(
+      label: 'Rotating roles: ${widget.texts[_textIndex]}',
+      child: Text(
+        '${widget.texts[_textIndex].substring(0, _charIndex)}_',
+        style: widget.style,
+      ),
     );
   }
 }
@@ -436,75 +487,82 @@ class _PremiumButtonState extends State<_PremiumButton> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedScale(
-        scale: _isHovered ? 1.05 : 1.0,
-        duration: const Duration(milliseconds: 200),
-        child: Container(
-          height: 60,
-          width: 220,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: _isHovered && widget.isPrimary
-                ? [
-                    BoxShadow(
-                      color: const Color(0xFF6C63FF).withValues(alpha: 0.4),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                    )
-                  ]
-                : [],
-          ),
-          child: ElevatedButton(
-            onPressed: widget.onPressed,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: widget.isPrimary ? const Color(0xFF6C63FF) : Colors.transparent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: widget.isPrimary ? BorderSide.none : const BorderSide(color: Colors.white24, width: 1.5),
-              ),
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+    return Focus(
+      onFocusChange: (focused) => setState(() => _isHovered = focused),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedScale(
+          scale: _isHovered && !reduceMotion ? 1.05 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: Container(
+            height: 60,
+            width: 220,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: _isHovered && widget.isPrimary && !reduceMotion
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF6C63FF).withValues(alpha: 0.4),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                      )
+                    ]
+                  : [],
             ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                if (widget.isPrimary && _isHovered)
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white.withValues(alpha: 0),
-                            Colors.white.withValues(alpha: 0.2),
-                            Colors.white.withValues(alpha: 0),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                    ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 1.5.seconds),
-                  ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      widget.text,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 0.5),
-                    ),
-                    if (widget.isPrimary) ...[
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward_rounded, size: 20)
-                          .animate(target: _isHovered ? 1 : 0)
-                          .moveX(begin: 0, end: 5),
-                    ],
-                  ],
+            child: ElevatedButton(
+              onPressed: widget.onPressed,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: widget.isPrimary ? const Color(0xFF6C63FF) : Colors.transparent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: widget.isPrimary 
+                    ? (_isHovered ? const BorderSide(color: Colors.white, width: 2) : BorderSide.none)
+                    : BorderSide(color: _isHovered ? const Color(0xFF6C63FF) : Colors.white24, width: 1.5),
                 ),
-              ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (widget.isPrimary && _isHovered && !reduceMotion)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0),
+                              Colors.white.withValues(alpha: 0.2),
+                              Colors.white.withValues(alpha: 0),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                      ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 1.5.seconds),
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.text,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 0.5),
+                      ),
+                      if (widget.isPrimary) ...[
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward_rounded, size: 20)
+                            .animate(target: _isHovered && !reduceMotion ? 1 : 0)
+                            .moveX(begin: 0, end: 5),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

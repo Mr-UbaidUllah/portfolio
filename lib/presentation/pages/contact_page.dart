@@ -8,6 +8,7 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/contact_form.dart';
 import '../widgets/footer.dart';
 import '../widgets/available_badge.dart';
+import '../widgets/resume_preview_modal.dart';
 
 class ContactPage extends StatefulWidget {
   const ContactPage({super.key});
@@ -116,7 +117,7 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
                           const SizedBox(height: 100),
                           _buildContactCardsGrid(isMobile),
                           const SizedBox(height: 100),
-                          _buildCTACard(isMobile),
+                          _buildCTACard(context, isMobile),
                           const SizedBox(height: 100),
                           _buildSocialSection(),
                           const SizedBox(height: 100),
@@ -331,7 +332,7 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
     );
   }
 
-  Widget _buildCTACard(bool isMobile) {
+  Widget _buildCTACard(BuildContext context, bool isMobile) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(isMobile ? 32 : 60),
@@ -369,7 +370,7 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
             runSpacing: 20,
             children: [
               _buildCTAButton("Hire Me", Icons.work_outline, true, () {}),
-              _buildCTAButton("Download Resume", Icons.download_rounded, false, () {}),
+              _buildCTAButton("Resume Preview", Icons.description_outlined, false, () => ResumePreviewModal.show(context)),
             ],
           ),
         ],

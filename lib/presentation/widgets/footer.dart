@@ -13,78 +13,132 @@ class Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40),
-      child: Column(
-        children: [
-          const Text(
-            '© 2024 UBAID ULLAH. CRAFTED WITH PRECISION.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white38,
-              fontSize: 12,
-              letterSpacing: 1.2,
+    return Semantics(
+      container: true,
+      label: 'Footer section',
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40),
+        child: Column(
+          children: [
+            const Text(
+              '© 2024 UBAID ULLAH. CRAFTED WITH PRECISION.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white38,
+                fontSize: 12,
+                letterSpacing: 1.2,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildFooterLink(
-                'LINKEDIN',
-                onTap: () => _launchUrl(
-                  'https://www.linkedin.com/in/ubaid-ullah',
-                ), // Replace with your link
-              ),
-              const SizedBox(width: 24),
-              _buildFooterLink(
-                'GITHUB',
-                onTap: () => _launchUrl(
-                  'https://github.com/Mr-UbaidUllah',
-                ), // Replace with your username
-              ),
-              const SizedBox(width: 24),
-              _buildFooterLink(
-                'EMAIL',
-                onTap: () => _launchUrl(
-                  'mailto:ubaidullah.dev09@gmail.com',
-                ), // Replace with your email
-              ),
-              const SizedBox(width: 15),
-              IconButton(
-                padding: EdgeInsets.all(10),
-                constraints: BoxConstraints(),
-                color: Color(0xFF6C63FF),
-                icon: const Icon(
-                  Icons.arrow_upward,
-                  size: 15,
-                  color: Colors.white38,
+            const SizedBox(height: 24),
+            Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _FooterLink(
+                  label: 'LINKEDIN',
+                  onTap: () => _launchUrl('https://www.linkedin.com/in/ubaid-ullah'),
                 ),
-                onPressed: () {
-                  Scrollable.ensureVisible(
-                    context,
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeInOut,
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
+                _FooterLink(
+                  label: 'GITHUB',
+                  onTap: () => _launchUrl('https://github.com/Mr-UbaidUllah'),
+                ),
+                _FooterLink(
+                  label: 'EMAIL',
+                  onTap: () => _launchUrl('mailto:ubaidullah.dev09@gmail.com'),
+                ),
+                const SizedBox(width: 15),
+                _BackToTopButton(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildFooterLink(String label, {required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white38,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 1.1,
+class _FooterLink extends StatefulWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _FooterLink({required this.label, required this.onTap});
+
+  @override
+  State<_FooterLink> createState() => _FooterLinkState();
+}
+
+class _FooterLinkState extends State<_FooterLink> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      onFocusChange: (focused) => setState(() => _isHovered = focused),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Text(
+              widget.label,
+              style: TextStyle(
+                color: _isHovered ? Colors.white : Colors.white38,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 1.1,
+                decoration: _isHovered ? TextDecoration.underline : null,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BackToTopButton extends StatefulWidget {
+  @override
+  State<_BackToTopButton> createState() => _BackToTopButtonState();
+}
+
+class _BackToTopButtonState extends State<_BackToTopButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      onFocusChange: (focused) => setState(() => _isHovered = focused),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: 'Back to top',
+            icon: Icon(
+              Icons.arrow_upward,
+              size: 18,
+              color: _isHovered ? Colors.white : Colors.white38,
+            ),
+            onPressed: () {
+              final scrollable = Scrollable.of(context);
+              scrollable.position.animateTo(
+                0,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOutCubic,
+              );
+            },
+          ),
         ),
       ),
     );

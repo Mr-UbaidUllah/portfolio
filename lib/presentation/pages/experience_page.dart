@@ -7,6 +7,8 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/experience_item.dart';
 import '../widgets/footer.dart';
 import '../widgets/grid_painter.dart';
+import '../widgets/resume_preview_modal.dart';
+import 'package:go_router/go_router.dart';
 
 class ExperiencePage extends StatefulWidget {
   const ExperiencePage({super.key});
@@ -108,7 +110,7 @@ class _ExperiencePageState extends State<ExperiencePage> with AutomaticKeepAlive
                             const SizedBox(height: 150),
 
                             // --- Call To Action Section ---
-                            _buildCTA(isMobile),
+                            _buildCTA(context, isMobile),
 
                             const SizedBox(height: 120),
                             const Footer().animate().fadeIn(delay: 1.2.seconds),
@@ -299,7 +301,7 @@ class _ExperiencePageState extends State<ExperiencePage> with AutomaticKeepAlive
     );
   }
 
-  Widget _buildCTA(bool isMobile) {
+  Widget _buildCTA(BuildContext context, bool isMobile) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: isMobile ? 60 : 100, horizontal: 40),
@@ -346,17 +348,23 @@ class _ExperiencePageState extends State<ExperiencePage> with AutomaticKeepAlive
             runSpacing: 24,
             alignment: WrapAlignment.center,
             children: [
-              _ctaButton('Download Resume', Icons.download_rounded, isPrimary: true),
-              _ctaButton('Contact Me', Icons.arrow_forward_rounded, isPrimary: false),
+              _AnimatedCTAButton(
+                text: 'Resume', 
+                icon: Icons.description_outlined, 
+                isPrimary: true,
+                onPressed: () => ResumePreviewModal.show(context),
+              ),
+              _AnimatedCTAButton(
+                text: 'Contact Me', 
+                icon: Icons.arrow_forward_rounded, 
+                isPrimary: false,
+                onPressed: () => context.go('/contact'),
+              ),
             ],
           ),
         ],
       ),
     ).animate().fadeIn(delay: 1.1.seconds).scale(begin: const Offset(0.95, 0.95));
-  }
-
-  Widget _ctaButton(String text, IconData icon, {required bool isPrimary}) {
-    return _AnimatedCTAButton(text: text, icon: icon, isPrimary: isPrimary);
   }
 }
 
@@ -364,8 +372,14 @@ class _AnimatedCTAButton extends StatefulWidget {
   final String text;
   final IconData icon;
   final bool isPrimary;
+  final VoidCallback onPressed;
 
-  const _AnimatedCTAButton({required this.text, required this.icon, required this.isPrimary});
+  const _AnimatedCTAButton({
+    required this.text, 
+    required this.icon, 
+    required this.isPrimary,
+    required this.onPressed,
+  });
 
   @override
   State<_AnimatedCTAButton> createState() => _AnimatedCTAButtonState();
@@ -398,7 +412,7 @@ class _AnimatedCTAButtonState extends State<_AnimatedCTAButton> {
               ],
             ),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: widget.onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: widget.isPrimary 
                     ? const Color(0xFF6C63FF) 

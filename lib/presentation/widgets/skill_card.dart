@@ -24,10 +24,10 @@ class SkillCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 32),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withOpacity(0.03),
+            color: accentColor.withValues(alpha: 0.03),
             blurRadius: 40,
             offset: const Offset(0, 10),
           ),
@@ -40,91 +40,102 @@ class SkillCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: const Color(0xFF0D0D1E).withOpacity(0.6),
+              color: const Color(0xFF0D0D1E).withValues(alpha: 0.6),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.white.withOpacity(0.04),
-                  Colors.white.withOpacity(0.01),
+                  Colors.white.withValues(alpha: 0.04),
+                  Colors.white.withValues(alpha: 0.01),
                 ],
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: accentColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: accentColor.withOpacity(0.2)),
+            child: Semantics(
+              container: true,
+              label: 'Skill category: $title',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: accentColor.withValues(alpha: 0.2)),
+                        ),
+                        child: Icon(icon, color: accentColor, size: 32),
                       ),
-                      child: Icon(icon, color: accentColor, size: 32),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${skills.length} Technologies',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withOpacity(0.4),
-                              fontWeight: FontWeight.w500,
+                            const SizedBox(height: 4),
+                            Text(
+                              '${skills.length} Technologies',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.4),
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        height: 1.6,
                       ),
                     ),
                   ],
-                ),
-                if (description.isNotEmpty) ...[
-                  const SizedBox(height: 20),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.5),
-                      height: 1.6,
-                    ),
-                  ),
+                  const SizedBox(height: 32),
+                  _buildSkillsList(context),
                 ],
-                const SizedBox(height: 32),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: skills
-                      .asMap()
-                      .entries
-                      .map((entry) => TechChip(
-                            skill: entry.value,
-                            accentColor: accentColor,
-                          ).animate().fadeIn(delay: (entry.key * 100).ms).scale(
-                            delay: (entry.key * 100).ms,
-                            begin: const Offset(0.8, 0.8),
-                          ))
-                      .toList(),
-                ),
-              ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSkillsList(BuildContext context) {
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+    
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: skills.asMap().entries.map((entry) {
+        final chip = TechChip(
+          skill: entry.value,
+          accentColor: accentColor,
+        );
+        if (reduceMotion) return chip;
+        return chip.animate().fadeIn(delay: (entry.key * 100).ms).scale(
+          delay: (entry.key * 100).ms,
+          begin: const Offset(0.8, 0.8),
+        );
+      }).toList(),
     );
   }
 }
@@ -144,55 +155,66 @@ class _TechChipState extends State<TechChip> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => isHovered = true),
-      onExit: (_) => setState(() => isHovered = false),
-      child: GestureDetector(
-        onTap: () => _showSkillDetails(context),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: isHovered
-                ? widget.accentColor.withOpacity(0.15)
-                : Colors.white.withOpacity(0.04),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isHovered
-                  ? widget.accentColor.withOpacity(0.5)
-                  : Colors.white.withOpacity(0.08),
-            ),
-            boxShadow: isHovered
-                ? [
-                    BoxShadow(
-                      color: widget.accentColor.withOpacity(0.2),
-                      blurRadius: 15,
-                      spreadRadius: -2,
-                    )
-                  ]
-                : [],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildLogo(),
-              const SizedBox(width: 10),
-              Text(
-                widget.skill.name,
-                style: TextStyle(
-                  color:
-                      isHovered ? Colors.white : Colors.white.withOpacity(0.8),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+
+    return Focus(
+      onFocusChange: (focused) => setState(() => isHovered = focused),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => isHovered = true),
+        onExit: (_) => setState(() => isHovered = false),
+        child: Semantics(
+          button: true,
+          label: '${widget.skill.name}, proficiency ${(widget.skill.percentage * 100).toInt()}%',
+          child: GestureDetector(
+            onTap: () => _showSkillDetails(context),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isHovered
+                    ? widget.accentColor.withValues(alpha: 0.15)
+                    : Colors.white.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isHovered
+                      ? widget.accentColor.withValues(alpha: 0.5)
+                      : Colors.white.withValues(alpha: 0.08),
+                  width: isHovered ? 1.5 : 1.0,
                 ),
+                boxShadow: isHovered && !reduceMotion
+                    ? [
+                        BoxShadow(
+                          color: widget.accentColor.withValues(alpha: 0.2),
+                          blurRadius: 15,
+                          spreadRadius: -2,
+                        )
+                      ]
+                    : [],
               ),
-              const SizedBox(width: 10),
-              _ProficiencyIndicator(
-                percentage: widget.skill.percentage,
-                color: widget.accentColor,
-                isHovered: isHovered,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildLogo(),
+                  const SizedBox(width: 10),
+                  Text(
+                    widget.skill.name,
+                    style: TextStyle(
+                      color:
+                          isHovered ? Colors.white : Colors.white.withValues(alpha: 0.8),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  _ProficiencyIndicator(
+                    percentage: widget.skill.percentage,
+                    color: widget.accentColor,
+                    isHovered: isHovered,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -204,7 +226,7 @@ class _TechChipState extends State<TechChip> {
       width: 22,
       height: 22,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Center(
@@ -226,10 +248,10 @@ class _TechChipState extends State<TechChip> {
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF0D0D1E).withOpacity(0.9),
+          backgroundColor: const Color(0xFF0D0D1E).withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: widget.accentColor.withOpacity(0.3)),
+            side: BorderSide(color: widget.accentColor.withValues(alpha: 0.3)),
           ),
           title: Row(
             children: [
@@ -263,7 +285,7 @@ class _TechChipState extends State<TechChip> {
               Text(
                 'Highly proficient in ${widget.skill.name}, utilizing it to build robust, scalable, and maintainable solutions with a focus on modern architecture.',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   height: 1.5,
                   fontSize: 14,
                 ),
@@ -300,7 +322,7 @@ class _DetailRow extends StatelessWidget {
           Text(
             '$label: ',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 13,
             ),
           ),
@@ -340,7 +362,7 @@ class _ProficiencyIndicator extends StatelessWidget {
           child: CircularProgressIndicator(
             value: percentage,
             strokeWidth: 2.2,
-            backgroundColor: Colors.white.withOpacity(0.1),
+            backgroundColor: Colors.white.withValues(alpha: 0.1),
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),

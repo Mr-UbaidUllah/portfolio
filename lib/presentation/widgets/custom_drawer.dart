@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../pages/portfolio_home_page.dart';
-import '../pages/projects_page.dart';
-import '../pages/experience_page.dart';
-import '../pages/skills_page.dart';
-import '../pages/contact_page.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -19,216 +15,289 @@ class CustomDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).matchedLocation;
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+
     return Drawer(
       backgroundColor: const Color(0xFF0D0D1E),
-      child: Column(
-        children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.white10)),
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      child: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(reduceMotion),
+            Expanded(
+              child: ListView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 children: [
-                  Container(
-                        height: 60,
-                        width: 60,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: const Color(0xFF6C63FF),
-                            width: 2,
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/3D Developer Avatar.png',
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      )
-                      .animate()
-                      .scale(duration: 600.ms, curve: Curves.easeOutBack)
-                      .fadeIn(),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Ubaid Ullah',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Flutter Developer',
-                    style: TextStyle(
-                      color: Colors.white.withAlpha((0.6 * 255).toInt()),
-                      fontSize: 12,
-                    ),
-                  ).animate().fadeIn(delay: 400.ms),
+                  _buildDrawerItem(
+                    context,
+                    Icons.home_outlined,
+                    'Home',
+                    '/home',
+                    location == '/home',
+                    0,
+                    reduceMotion,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    Icons.code_rounded,
+                    'Projects',
+                    '/projects',
+                    location == '/projects',
+                    1,
+                    reduceMotion,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    Icons.work_outline_rounded,
+                    'Experience',
+                    '/experience',
+                    location == '/experience',
+                    2,
+                    reduceMotion,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    Icons.psychology_outlined,
+                    'Skills',
+                    '/skills',
+                    location == '/skills',
+                    3,
+                    reduceMotion,
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    Icons.alternate_email_rounded,
+                    'Contact',
+                    '/contact',
+                    location == '/contact',
+                    4,
+                    reduceMotion,
+                  ),
                 ],
               ),
             ),
-          ),
-          Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              itemExtent: 65,
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              children: [
-                _buildDrawerItem(
-                  context,
-                  'assets/images/drawer_home.png',
-                  'Home',
-                  const PortfolioHomePage(),
-                  0,
+            const Divider(color: Colors.white10),
+            _buildSocialSection(reduceMotion),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(bool reduceMotion) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.white10)),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              height: 80,
+              width: 80,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color(0xFF6C63FF),
+                  width: 2,
                 ),
-                _buildDrawerItem(
-                  context,
-                  'assets/images/drawer_project.png',
-                  'Projects',
-                  const ProjectsPage(),
-                  1,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+                    blurRadius: 20,
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: Semantics(
+                  label: 'Ubaid Ullah Avatar',
+                  child: Image.asset(
+                    'assets/images/profileImage.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, _, __) => const Icon(Icons.person, color: Colors.white24, size: 40),
+                  ),
                 ),
-                _buildDrawerItem(
-                  context,
-                  'assets/images/drawer_experience.png',
-                  'Experience',
-                  const ExperiencePage(),
-                  2,
-                ),
-                _buildDrawerItem(
-                  context,
-                  'assets/images/drawer_skill.png',
-                  'Skills',
-                  const SkillsPage(),
-                  3,
-                ),
-                _buildDrawerItem(
-                  context,
-                  'assets/images/drawer_contact.png',
-                  'Contact',
-                  const ContactPage(),
-                  4,
-                ),
-              ],
-            ),
-          ),
-          const Divider(color: Colors.white10),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildSocialIcon(
-                  Icons.link,
-                  0,
-                  () => _launchUrl('https://www.linkedin.com/in/ubaid-ullah'),
-                ),
-                _buildSocialIcon(
-                  Icons.code,
-                  1,
-                  () => _launchUrl('https://github.com/Mr-UbaidUllah'),
-                ),
-                _buildSocialIcon(
-                  Icons.alternate_email,
-                  2,
-                  () => _launchUrl('mailto:ubaidullah.dev09@gmail.com'),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-        ],
+              ),
+            )
+            .animate()
+            .scale(duration: reduceMotion ? 0.ms : 600.ms, curve: Curves.easeOutBack)
+            .fadeIn(duration: reduceMotion ? 0.ms : 600.ms),
+            const SizedBox(height: 16),
+            const Text(
+              'Ubaid Ullah',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ).animate().fadeIn(delay: reduceMotion ? 0.ms : 200.ms).slideY(begin: reduceMotion ? 0 : 0.2),
+            const SizedBox(height: 4),
+            const Text(
+              'Flutter Developer',
+              style: TextStyle(
+                color: Colors.white60,
+                fontSize: 14,
+                letterSpacing: 1,
+              ),
+            ).animate().fadeIn(delay: reduceMotion ? 0.ms : 400.ms),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildDrawerItem(
     BuildContext context,
-    String imagePath,
+    IconData icon,
     String title,
-    Widget destination,
+    String routePath,
+    bool isSelected,
     int index,
+    bool reduceMotion,
   ) {
-    final isSelected =
-        ModalRoute.of(context)?.settings.name == null && title == 'Home' ||
-        ModalRoute.of(context)?.settings.name == title;
-
-    return InkWell(
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    destination,
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                settings: RouteSettings(name: title),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: isSelected
-                    ? [
-                        const Color(0xFF6C63FF).withAlpha((0.2 * 255).toInt()),
-                        const Color(0xFF0D0D1E),
-                      ]
-                    : [const Color(0xFF0D0D1E), const Color(0xFF0D0D1E)],
-              ),
-            ),
-            child: Row(
-              children: [
-                Image.asset(
-                  imagePath,
-                  height: 22,
-                  width: 22,
-                  color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isHovered = false;
+        return Focus(
+          onFocusChange: (focused) => setState(() => isHovered = focused),
+          child: MouseRegion(
+            onEnter: (_) => setState(() => isHovered = true),
+            onExit: (_) => setState(() => isHovered = false),
+            child: Semantics(
+              button: true,
+              selected: isSelected,
+              label: 'Navigate to $title',
+              child: ListTile(
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go(routePath);
+                },
+                leading: Icon(
+                  icon,
+                  color: isSelected || isHovered ? const Color(0xFF6C63FF) : Colors.white38,
                 ),
-                const SizedBox(width: 16),
-                Text(
+                title: Text(
                   title,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                    fontSize: 15,
-                    fontFamily: 'regular',
+                    color: isSelected || isHovered ? Colors.white : Colors.white60,
+                    fontSize: 16,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
-              ],
+                contentPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+                tileColor: isSelected ? const Color(0xFF6C63FF).withValues(alpha: 0.05) : Colors.transparent,
+              ),
             ),
           ),
-        )
-        .animate()
-        .fadeIn(delay: (100 * index).ms, duration: 400.ms)
-        .slideX(begin: -0.1, end: 0);
+        );
+      }
+    ).animate()
+     .fadeIn(delay: reduceMotion ? 0.ms : (100 * index).ms, duration: reduceMotion ? 0.ms : 400.ms)
+     .slideX(begin: reduceMotion ? 0 : -0.1, end: 0);
   }
 
-  Widget _buildSocialIcon(IconData icon, int index, VoidCallback onTap) {
-    return InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(25),
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white10),
-            ),
-            child: Icon(icon, color: Colors.white38, size: 20),
+  Widget _buildSocialSection(bool reduceMotion) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _SocialIconButton(
+            icon: Icons.link,
+            index: 0,
+            onTap: () => _launchUrl('https://www.linkedin.com/in/ubaid-ullah'),
+            reduceMotion: reduceMotion,
+            tooltip: 'LinkedIn',
           ),
-        )
-        .animate()
-        .fadeIn(delay: (600 + (100 * index)).ms)
-        .scale(curve: Curves.elasticOut);
+          _SocialIconButton(
+            icon: Icons.code,
+            index: 1,
+            onTap: () => _launchUrl('https://github.com/Mr-UbaidUllah'),
+            reduceMotion: reduceMotion,
+            tooltip: 'GitHub',
+          ),
+          _SocialIconButton(
+            icon: Icons.alternate_email,
+            index: 2,
+            onTap: () => _launchUrl('mailto:ubaidullah.dev09@gmail.com'),
+            reduceMotion: reduceMotion,
+            tooltip: 'Email',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SocialIconButton extends StatefulWidget {
+  final IconData icon;
+  final int index;
+  final VoidCallback onTap;
+  final bool reduceMotion;
+  final String tooltip;
+
+  const _SocialIconButton({
+    required this.icon,
+    required this.index,
+    required this.onTap,
+    required this.reduceMotion,
+    required this.tooltip,
+  });
+
+  @override
+  State<_SocialIconButton> createState() => _SocialIconButtonState();
+}
+
+class _SocialIconButtonState extends State<_SocialIconButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      onFocusChange: (focused) => setState(() => _isHovered = focused),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: Tooltip(
+          message: widget.tooltip,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(25),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.all(12),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _isHovered ? const Color(0xFF6C63FF).withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.03),
+                border: Border.all(
+                  color: _isHovered ? const Color(0xFF6C63FF).withValues(alpha: 0.5) : Colors.white10,
+                ),
+                boxShadow: _isHovered ? [
+                  BoxShadow(
+                    color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  )
+                ] : null,
+              ),
+              child: Icon(
+                widget.icon,
+                color: _isHovered ? Colors.white : Colors.white38,
+                size: 22,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ).animate()
+     .fadeIn(delay: widget.reduceMotion ? 0.ms : (600 + (100 * widget.index)).ms, duration: widget.reduceMotion ? 0.ms : 400.ms)
+     .scale(curve: Curves.elasticOut, begin: widget.reduceMotion ? const Offset(1, 1) : const Offset(0, 0));
   }
 }

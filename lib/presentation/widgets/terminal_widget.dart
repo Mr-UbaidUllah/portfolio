@@ -1,6 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'resume_preview_modal.dart';
 
 class TerminalWidget extends StatefulWidget {
   const TerminalWidget({super.key});
@@ -10,175 +14,271 @@ class TerminalWidget extends StatefulWidget {
 }
 
 class _TerminalWidgetState extends State<TerminalWidget> {
-  final List<TerminalLine> _lines = [
-    TerminalLine(command: 'whoami', response: 'Ubaid Ullah — Full Stack Flutter Developer'),
-    TerminalLine(command: 'ls --skills', response: 'Flutter, Dart, Firebase, Node.js, AWS, Git'),
-    TerminalLine(command: 'status', response: 'Building modern experiences 🚀'),
-    TerminalLine(command: 'contact', response: 'ubaidullah.dev09@gmail.com'),
+  final List<TerminalLineData> _history = [
+    TerminalLineData(command: 'whoami', response: 'Ubaid Ullah — Senior Flutter Engineer & UI/UX Specialist'),
+    TerminalLineData(command: 'ls --welcome', response: 'Type "help" to see available commands or "updates" for latest fixes.'),
   ];
+
+  final TextEditingController _inputController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+  final List<String> _commandHistory = [];
+  int _historyIndex = -1;
+
+  @override
+  void dispose() {
+    _inputController.dispose();
+    _focusNode.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _handleCommand(String input) {
+    final cmd = input.trim().toLowerCase();
+    if (cmd.isEmpty) return;
+
+    _commandHistory.insert(0, input);
+    _historyIndex = -1;
+    String response = '';
+    bool clear = false;
+
+    if (cmd == 'help') {
+      response = 'Available commands: help, updates, about, skills, projects, experience, contact, resume, github, linkedin, clear, ls, pwd, whoami, cat [file], echo [msg]';
+    } else if (cmd == 'updates' || cmd == 'changelog') {
+      response = '''
+[LATEST UPDATES]
+• FIXED: Pixel overflow issues on Mobile/Tablet views.
+• FIXED: Drawer navigation components visibility & animations.
+• IMPROVED: Responsive scaling for Hero Portfolio Card.
+• IMPROVED: Navigation bar layout for smaller screens.
+• UPDATED: Social links in footer with better wrapping support.''';
+    } else if (cmd == 'about') {
+      response = 'I am a Senior Flutter Developer focused on building high-performance, beautiful mobile and web applications with premium UI and modern architecture.';
+    } else if (cmd == 'skills' || cmd == 'ls skills') {
+      context.go('/skills');
+      response = 'Navigating to Skills...';
+    } else if (cmd == 'projects' || cmd == 'ls projects') {
+      context.go('/projects');
+      response = 'Navigating to Projects...';
+    } else if (cmd == 'experience') {
+      context.go('/experience');
+      response = 'Navigating to Experience...';
+    } else if (cmd == 'contact') {
+      context.go('/contact');
+      response = 'Navigating to Contact...';
+    } else if (cmd == 'resume') {
+      response = 'Opening Resume Preview...';
+      ResumePreviewModal.show(context);
+    } else if (cmd == 'github') {
+      _launchUrl('https://github.com/Mr-UbaidUllah');
+      response = 'Opening GitHub profile...';
+    } else if (cmd == 'linkedin') {
+      _launchUrl('https://www.linkedin.com/in/ubaid-ullah');
+      response = 'Opening LinkedIn profile...';
+    } else if (cmd == 'clear') {
+      clear = true;
+    } else if (cmd == 'ls') {
+      response = 'home  projects  experience  skills  contact  ubaidullah_CV.pdf';
+    } else if (cmd == 'pwd') {
+      response = '/users/ubaid/portfolio${GoRouterState.of(context).uri.path}';
+    } else if (cmd == 'whoami') {
+      response = 'ubaid_ullah (Senior Flutter Engineer)';
+    } else if (cmd.startsWith('echo ')) {
+      response = input.substring(5);
+    } else if (cmd.startsWith('cat ')) {
+      final file = cmd.substring(4).trim();
+      if (file == 'resume' || file == 'ubaidullah_CV.pdf') {
+        ResumePreviewModal.show(context);
+        response = 'Reading ubaidullah_CV.pdf...';
+      } else if (file == 'skills') {
+        context.go('/skills');
+        response = 'Opening skills section...';
+      } else if (file == 'projects') {
+        context.go('/projects');
+        response = 'Opening projects section...';
+      } else if (file == 'experience') {
+        context.go('/experience');
+        response = 'Opening experience section...';
+      } else if (file == 'contact') {
+        context.go('/contact');
+        response = 'Opening contact section...';
+      } else {
+        response = 'cat: $file: No such file or directory';
+      }
+    } else {
+      response = 'zsh: command not found: $cmd. Type "help" for options.';
+    }
+
+    setState(() {
+      if (clear) {
+        _history.clear();
+      } else {
+        _history.add(TerminalLineData(command: input, response: response));
+      }
+      _inputController.clear();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url)) throw 'Could not launch $url';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          width: 480,
-          height: 320,
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.4),
-                blurRadius: 30,
-                offset: const Offset(0, 15),
+    return Semantics(
+      label: 'Interactive Developer Terminal',
+      child: GestureDetector(
+        onTap: () => _focusNode.requestFocus(),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              width: 600,
+              height: 400,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 30, offset: const Offset(0, 15)),
+                ],
               ),
-              BoxShadow(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                blurRadius: 20,
-                spreadRadius: -5,
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Terminal Header (macOS style)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  border: Border(
-                    bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    _dot(const Color(0xFFFF5F56)),
-                    const SizedBox(width: 8),
-                    _dot(const Color(0xFFFFBD2E)),
-                    const SizedBox(width: 8),
-                    _dot(const Color(0xFF27C93F)),
-                    Expanded(
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.terminal, size: 14, color: Colors.white38),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'zsh — ubaid2portfolio',
-                              style: TextStyle(
-                                color: Colors.white38,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'monospace',
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: ListView(
+                        controller: _scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        children: [
+                          ..._history.map((line) => _buildHistoryLine(line)),
+                          _buildInputLine(),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 48), // Balance for dots
-                  ],
-                ),
-              ),
-              // Terminal Content
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: ListView.builder(
-                    itemCount: _lines.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == _lines.length) {
-                        return const _ActiveCursorLine();
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
-                        child: _buildCommandLine(_lines[index], index),
-                      );
-                    },
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
-    ).animate().fadeIn(duration: 800.ms).scale(begin: const Offset(0.95, 0.95));
+    ).animate().fadeIn().scale(begin: const Offset(0.98, 0.98));
   }
 
-  Widget _buildCommandLine(TerminalLine line, int index) {
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+      ),
+      child: Row(
+        children: [
+          _dot(const Color(0xFFFF5F56)),
+          const SizedBox(width: 8),
+          _dot(const Color(0xFFFFBD2E)),
+          const SizedBox(width: 8),
+          _dot(const Color(0xFF27C93F)),
+          const Expanded(
+            child: Center(
+              child: Text(
+                'ubaid — zsh — 80x24',
+                style: TextStyle(color: Colors.white38, fontSize: 11, fontFamily: 'monospace'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryLine(TerminalLineData line) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text(
-              '➜ ',
-              style: TextStyle(
-                color: Color(0xFF818CF8),
-                fontWeight: FontWeight.bold,
-                fontFamily: 'monospace',
-                fontSize: 14,
-              ),
-            ),
-            const Text(
-              '~ ',
-              style: TextStyle(
-                color: Color(0xFF34D399),
-                fontFamily: 'monospace',
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-            Expanded(
-              child: Animate(
-                delay: (index * 1500).ms,
-                effects: [
-                  CustomEffect(
-                    duration: (line.command.length * 50).ms,
-                    builder: (context, value, child) {
-                      final length = (value * line.command.length).floor();
-                      return Text(
-                        line.command.substring(0, length),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'monospace',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
+            const Text('➜ ', style: TextStyle(color: Color(0xFF818CF8), fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+            const Text('~ ', style: TextStyle(color: Color(0xFF34D399), fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+            Text(line.command, style: const TextStyle(color: Colors.white, fontFamily: 'monospace')),
           ],
         ),
-        const SizedBox(height: 4),
-        Animate(
-          delay: (index * 1500 + 700).ms,
-          effects: [
-            FadeEffect(duration: 400.ms),
-            const SlideEffect(begin: Offset(0, 0.1), end: Offset.zero),
-          ],
-          child: Padding(
-            padding: const EdgeInsets.only(left: 28.0),
+        if (line.response.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(left: 28, top: 4, bottom: 12),
             child: Text(
               line.response,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontFamily: 'monospace',
-                fontSize: 13,
-                height: 1.5,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontFamily: 'monospace', fontSize: 13),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildInputLine() {
+    return Row(
+      children: [
+        const Text('➜ ', style: TextStyle(color: Color(0xFF818CF8), fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+        const Text('~ ', style: TextStyle(color: Color(0xFF34D399), fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Focus(
+            onKeyEvent: (node, event) {
+              if (event is KeyDownEvent) {
+                if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                  if (_commandHistory.isNotEmpty && _historyIndex < _commandHistory.length - 1) {
+                    setState(() {
+                      _historyIndex++;
+                      _inputController.text = _commandHistory[_historyIndex];
+                      _inputController.selection = TextSelection.fromPosition(TextPosition(offset: _inputController.text.length));
+                    });
+                    return KeyEventResult.handled;
+                  }
+                } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                  if (_historyIndex > 0) {
+                    setState(() {
+                      _historyIndex--;
+                      _inputController.text = _commandHistory[_historyIndex];
+                    });
+                    return KeyEventResult.handled;
+                  } else if (_historyIndex == 0) {
+                    setState(() {
+                      _historyIndex = -1;
+                      _inputController.clear();
+                    });
+                    return KeyEventResult.handled;
+                  }
+                }
+              }
+              return KeyEventResult.ignored;
+            },
+            child: TextField(
+              controller: _inputController,
+              focusNode: _focusNode,
+              autofocus: true,
+              cursorColor: const Color(0xFF6C63FF),
+              style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontSize: 14),
+              decoration: const InputDecoration(
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+                border: InputBorder.none,
               ),
+              onSubmitted: _handleCommand,
             ),
           ),
         ),
@@ -187,70 +287,12 @@ class _TerminalWidgetState extends State<TerminalWidget> {
   }
 
   Widget _dot(Color color) {
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-    );
+    return Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle));
   }
 }
 
-class TerminalLine {
+class TerminalLineData {
   final String command;
   final String response;
-
-  TerminalLine({required this.command, required this.response});
-}
-
-class _ActiveCursorLine extends StatelessWidget {
-  const _ActiveCursorLine();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Text(
-          '➜ ',
-          style: TextStyle(
-            color: Color(0xFF818CF8),
-            fontWeight: FontWeight.bold,
-            fontFamily: 'monospace',
-          ),
-        ),
-        const Text(
-          '~ ',
-          style: TextStyle(
-            color: Color(0xFF34D399),
-            fontFamily: 'monospace',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Container(
-          width: 8,
-          height: 16,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.2),
-                blurRadius: 4,
-              ),
-            ],
-          ),
-        ).animate(onPlay: (c) => c.repeat())
-         .fadeIn(duration: 500.ms)
-         .fadeOut(delay: 500.ms, duration: 500.ms),
-      ],
-    ).animate(delay: 6.seconds).fadeIn();
-  }
+  TerminalLineData({required this.command, required this.response});
 }

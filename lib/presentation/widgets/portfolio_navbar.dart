@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/app_breakpoints.dart';
 import 'nav_item.dart';
 
 class PortfolioNavbar extends StatelessWidget {
@@ -63,13 +62,16 @@ class PortfolioNavbar extends StatelessWidget {
                 ),
               ).animate(onPlay: (c) => c.repeat()).scale(begin: const Offset(1, 1), end: const Offset(2, 2), duration: 1.seconds).fadeOut(),
               const SizedBox(width: 12),
-              const Text(
-                'UBAID',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 22,
-                  letterSpacing: 2,
-                  color: Colors.white,
+              const Flexible(
+                child: Text(
+                  'UBAID',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 22,
+                    letterSpacing: 2,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
