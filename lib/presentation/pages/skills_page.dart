@@ -1,13 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../core/app_breakpoints.dart';
+import '../widgets/portfolio_navbar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/skill_card.dart';
 import '../widgets/footer.dart';
-import 'portfolio_home_page.dart';
-import 'projects_page.dart';
-import 'experience_page.dart';
-import 'contact_page.dart';
 
 class SkillsPage extends StatefulWidget {
   const SkillsPage({super.key});
@@ -16,8 +14,11 @@ class SkillsPage extends StatefulWidget {
   State<SkillsPage> createState() => _SkillsPageState();
 }
 
-class _SkillsPageState extends State<SkillsPage> {
+class _SkillsPageState extends State<SkillsPage> with AutomaticKeepAliveClientMixin {
   String selectedCategory = 'All';
+
+  @override
+  bool get wantKeepAlive => true;
 
   final List<Map<String, dynamic>> categories = [
     {'name': 'All', 'icon': Icons.grid_view_rounded},
@@ -30,9 +31,10 @@ class _SkillsPageState extends State<SkillsPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 900;
+    final isMobile = AppBreakpoints.isMobile(size.width);
 
     return Scaffold(
       key: scaffoldKey,
@@ -44,8 +46,9 @@ class _SkillsPageState extends State<SkillsPage> {
           const _BackgroundMesh(),
           
           CustomScrollView(
+            physics: const BouncingScrollPhysics(),
             slivers: [
-              _buildAppBar(context, isMobile, scaffoldKey),
+              PortfolioNavbar(isMobile: isMobile, scaffoldKey: scaffoldKey),
               SliverToBoxAdapter(
                 child: Center(
                   child: ConstrainedBox(
@@ -78,38 +81,6 @@ class _SkillsPageState extends State<SkillsPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context, bool isMobile, GlobalKey<ScaffoldState> scaffoldKey) {
-    return SliverAppBar(
-      floating: true,
-      backgroundColor: const Color(0xFF02020A).withOpacity(0.8),
-      elevation: 0,
-      leading: isMobile
-          ? IconButton(
-              icon: const Icon(Icons.menu, color: Color(0xFF6C63FF)),
-              onPressed: () => scaffoldKey.currentState?.openDrawer(),
-            )
-          : null,
-      title: Text(
-        'Ubaid Ullah',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-          color: Colors.white.withOpacity(0.9),
-        ),
-      ),
-      actions: [
-        if (!isMobile) ...[
-          _navItem(context, 'Home', const PortfolioHomePage()),
-          _navItem(context, 'Projects', const ProjectsPage()),
-          _navItem(context, 'Experience', const ExperiencePage()),
-          _navItem(context, 'Skills', const SkillsPage(), isSelected: true),
-          _navItem(context, 'Contact', const ContactPage()),
-          const SizedBox(width: 20),
-        ],
-      ],
     );
   }
 
@@ -310,6 +281,9 @@ class _SkillsPageState extends State<SkillsPage> {
         ? allCards
         : allCards.where((card) => card.title.contains(selectedCategory)).toList();
 
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final crossAxisCount = constraints.maxWidth > 1000 ? 2 : 1;
@@ -324,7 +298,9 @@ class _SkillsPageState extends State<SkillsPage> {
           ),
           itemCount: filteredCards.length,
           itemBuilder: (context, index) {
-            return filteredCards[index]
+            final card = filteredCards[index];
+            if (reduceMotion) return card;
+            return card
                 .animate()
                 .fadeIn(delay: (index * 150).ms, duration: 600.ms)
                 .slideY(begin: 0.1, end: 0);
@@ -395,33 +371,6 @@ class _SkillsPageState extends State<SkillsPage> {
       ),
     );
   }
-
-  Widget _navItem(BuildContext context, String title, Widget destination, {bool isSelected = false}) {
-    return TextButton(
-      onPressed: isSelected ? null : () {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => destination,
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            settings: RouteSettings(name: title),
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: isSelected ? const Color(0xFF6C63FF) : Colors.white70,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _AnimatedDivider extends StatelessWidget {
@@ -429,6 +378,8 @@ class _AnimatedDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
     return Container(
       height: 2,
       width: 100,
@@ -445,7 +396,7 @@ class _AnimatedDivider extends StatelessWidget {
           ),
         ],
       ),
-    ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+    ).animate(onPlay: (controller) => reduceMotion ? controller.stop() : controller.repeat(reverse: true))
      .shimmer(duration: 2000.ms, color: Colors.white);
   }
 }
@@ -455,20 +406,22 @@ class _BackgroundMesh extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: -100,
-          right: -100,
-          child: _GlowBlob(color: const Color(0xFF6C63FF).withOpacity(0.1), size: 500),
-        ),
-        Positioned(
-          bottom: -200,
-          left: -100,
-          child: _GlowBlob(color: const Color(0xFF00D2FF).withOpacity(0.1), size: 600),
-        ),
-        const _DeveloperGrid(),
-      ],
+    return RepaintBoundary(
+      child: Stack(
+        children: [
+          Positioned(
+            top: -100,
+            right: -100,
+            child: _GlowBlob(color: const Color(0xFF6C63FF).withOpacity(0.1), size: 500),
+          ),
+          Positioned(
+            bottom: -200,
+            left: -100,
+            child: _GlowBlob(color: const Color(0xFF00D2FF).withOpacity(0.1), size: 600),
+          ),
+          const _DeveloperGrid(),
+        ],
+      ),
     );
   }
 }
@@ -481,6 +434,8 @@ class _GlowBlob extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
     return Container(
       width: size,
       height: size,
@@ -494,7 +449,7 @@ class _GlowBlob extends StatelessWidget {
           ),
         ],
       ),
-    ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+    ).animate(onPlay: (controller) => reduceMotion ? controller.stop() : controller.repeat(reverse: true))
      .moveY(begin: -20, end: 20, duration: 4000.ms)
      .scale(begin: const Offset(1, 1), end: const Offset(1.1, 1.1), duration: 4000.ms);
   }

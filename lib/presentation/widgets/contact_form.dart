@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class ContactForm extends StatefulWidget {
@@ -13,19 +14,53 @@ class _ContactFormState extends State<ContactForm> {
   bool _isSending = false;
   bool _isSuccess = false;
 
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _subjectController = TextEditingController();
+  final _messageController = TextEditingController();
+
+  final _nameFocus = FocusNode();
+  final _emailFocus = FocusNode();
+  final _subjectFocus = FocusNode();
+  final _messageFocus = FocusNode();
+  final _submitFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _subjectController.dispose();
+    _messageController.dispose();
+    _nameFocus.dispose();
+    _emailFocus.dispose();
+    _subjectFocus.dispose();
+    _messageFocus.dispose();
+    _submitFocus.dispose();
+    super.dispose();
+  }
+
   void _handleSubmit() async {
-    setState(() => _isSending = true);
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) {
-      setState(() {
-        _isSending = false;
-        _isSuccess = true;
-      });
-      // Reset after success
-      await Future.delayed(const Duration(seconds: 3));
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() => _isSending = true);
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 2));
       if (mounted) {
-        setState(() => _isSuccess = false);
+        setState(() {
+          _isSending = false;
+          _isSuccess = true;
+        });
+        // Reset after success
+        await Future.delayed(const Duration(seconds: 3));
+        if (mounted) {
+          setState(() {
+            _isSuccess = false;
+            _nameController.clear();
+            _emailController.clear();
+            _subjectController.clear();
+            _messageController.clear();
+          });
+        }
       }
     }
   }
@@ -39,70 +74,91 @@ class _ContactFormState extends State<ContactForm> {
   }
 
   Widget _buildFormState() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(32),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-          padding: const EdgeInsets.all(40),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 40,
-                offset: const Offset(0, 20),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Send a Message',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+    return Semantics(
+      label: 'Contact form',
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(32),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.03),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
                 ),
+              ],
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Send a Message',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'I\'ll get back to you as soon as possible.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildModernTextField(
+                    label: 'Full Name',
+                    hint: 'John Doe',
+                    icon: Icons.person_outline_rounded,
+                    controller: _nameController,
+                    focusNode: _nameFocus,
+                    nextFocus: _emailFocus,
+                    validator: (v) => v!.isEmpty ? 'Name is required' : null,
+                  ),
+                  const SizedBox(height: 24),
+                  _buildModernTextField(
+                    label: 'Email Address',
+                    hint: 'john@example.com',
+                    icon: Icons.alternate_email_rounded,
+                    controller: _emailController,
+                    focusNode: _emailFocus,
+                    nextFocus: _subjectFocus,
+                    validator: (v) => !v!.contains('@') ? 'Invalid email' : null,
+                  ),
+                  const SizedBox(height: 24),
+                  _buildModernTextField(
+                    label: 'Subject',
+                    hint: 'Project Inquiry',
+                    icon: Icons.subject_rounded,
+                    controller: _subjectController,
+                    focusNode: _subjectFocus,
+                    nextFocus: _messageFocus,
+                  ),
+                  const SizedBox(height: 24),
+                  _buildModernTextField(
+                    label: 'Message',
+                    hint: 'How can I help you?',
+                    maxLines: 4,
+                    controller: _messageController,
+                    focusNode: _messageFocus,
+                    nextFocus: _submitFocus,
+                    validator: (v) => v!.isEmpty ? 'Message is required' : null,
+                  ),
+                  const SizedBox(height: 40),
+                  _buildSubmitButton(),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                'I\'ll get back to you as soon as possible.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.5),
-                ),
-              ),
-              const SizedBox(height: 32),
-              _buildModernTextField(
-                label: 'Full Name',
-                hint: 'John Doe',
-                icon: Icons.person_outline_rounded,
-              ),
-              const SizedBox(height: 24),
-              _buildModernTextField(
-                label: 'Email Address',
-                hint: 'john@example.com',
-                icon: Icons.alternate_email_rounded,
-              ),
-              const SizedBox(height: 24),
-              _buildModernTextField(
-                label: 'Subject',
-                hint: 'Project Inquiry',
-                icon: Icons.subject_rounded,
-              ),
-              const SizedBox(height: 24),
-              _buildModernTextField(
-                label: 'Message',
-                hint: 'How can I help you?',
-                maxLines: 4,
-              ),
-              const SizedBox(height: 40),
-              _buildSubmitButton(),
-            ],
+            ),
           ),
         ),
       ),
@@ -159,8 +215,12 @@ class _ContactFormState extends State<ContactForm> {
   Widget _buildModernTextField({
     required String label,
     required String hint,
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    FocusNode? nextFocus,
     IconData? icon,
     int maxLines = 1,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,9 +237,20 @@ class _ContactFormState extends State<ContactForm> {
             ),
           ),
         ),
-        TextField(
+        TextFormField(
+          controller: controller,
+          focusNode: focusNode,
           maxLines: maxLines,
           style: const TextStyle(color: Colors.white, fontSize: 15),
+          validator: validator,
+          textInputAction: nextFocus != null ? TextInputAction.next : TextInputAction.done,
+          onFieldSubmitted: (_) {
+            if (nextFocus != null) {
+              FocusScope.of(context).requestFocus(nextFocus);
+            } else {
+              _handleSubmit();
+            }
+          },
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.2)),
@@ -208,54 +279,73 @@ class _ContactFormState extends State<ContactForm> {
   }
 
   Widget _buildSubmitButton() {
-    return Container(
-      width: double.infinity,
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6C63FF), Color(0xFF4B45CC)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: _isSending ? null : _handleSubmit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-        child: _isSending
-            ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+    bool isHovered = false;
+    return StatefulBuilder(
+      builder: (context, setBtnState) {
+        return Focus(
+          focusNode: _submitFocus,
+          onFocusChange: (focused) => setBtnState(() => isHovered = focused),
+          child: MouseRegion(
+            onEnter: (_) => setBtnState(() => isHovered = true),
+            onExit: (_) => setBtnState(() => isHovered = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: double.infinity,
+              height: 60,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: isHovered 
+                    ? [const Color(0xFF7C73FF), const Color(0xFF5B55DC)]
+                    : [const Color(0xFF6C63FF), const Color(0xFF4B45CC)],
                 ),
-              )
-            : const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Send Message',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6C63FF).withValues(alpha: isHovered ? 0.5 : 0.3),
+                    blurRadius: isHovered ? 30 : 20,
+                    offset: Offset(0, isHovered ? 12 : 10),
                   ),
-                  SizedBox(width: 12),
-                  Icon(Icons.arrow_forward_rounded, size: 20),
                 ],
               ),
-      ),
+              child: ElevatedButton(
+                onPressed: _isSending ? null : _handleSubmit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: isHovered ? const BorderSide(color: Colors.white, width: 1.5) : BorderSide.none,
+                  ),
+                ),
+                child: _isSending
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Send Message',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Icon(Icons.arrow_forward_rounded, size: 20),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        );
+      }
     );
   }
 }

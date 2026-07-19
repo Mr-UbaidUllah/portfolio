@@ -1,14 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../core/app_breakpoints.dart';
+import '../widgets/portfolio_navbar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/experience_item.dart';
 import '../widgets/footer.dart';
 import '../widgets/grid_painter.dart';
-import 'portfolio_home_page.dart';
-import 'projects_page.dart';
-import 'skills_page.dart';
-import 'contact_page.dart';
 
 class ExperiencePage extends StatefulWidget {
   const ExperiencePage({super.key});
@@ -17,9 +15,12 @@ class ExperiencePage extends StatefulWidget {
   State<ExperiencePage> createState() => _ExperiencePageState();
 }
 
-class _ExperiencePageState extends State<ExperiencePage> {
+class _ExperiencePageState extends State<ExperiencePage> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<Offset> _mousePosition = ValueNotifier(Offset.zero);
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
@@ -30,9 +31,10 @@ class _ExperiencePageState extends State<ExperiencePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 800;
+    final isMobile = AppBreakpoints.isMobile(size.width);
 
     return Scaffold(
       key: scaffoldKey,
@@ -74,9 +76,9 @@ class _ExperiencePageState extends State<ExperiencePage> {
 
             CustomScrollView(
               controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
               slivers: [
-                // --- Glassmorphism Navbar ---
-                _buildNavbar(context, isMobile, scaffoldKey),
+                PortfolioNavbar(isMobile: isMobile, scaffoldKey: scaffoldKey),
 
                 SliverToBoxAdapter(
                   child: Center(
@@ -121,58 +123,6 @@ class _ExperiencePageState extends State<ExperiencePage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildNavbar(BuildContext context, bool isMobile, GlobalKey<ScaffoldState> scaffoldKey) {
-    return SliverAppBar(
-      pinned: true,
-      floating: true,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      expandedHeight: 80,
-      collapsedHeight: 70,
-      flexibleSpace: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF02020A).withValues(alpha: 0.7),
-              border: const Border(
-                bottom: BorderSide(color: Colors.white10, width: 0.5),
-              ),
-            ),
-          ),
-        ),
-      ),
-      leading: isMobile
-          ? IconButton(
-              icon: const Icon(Icons.menu, color: Color(0xFF6C63FF)),
-              onPressed: () => scaffoldKey.currentState?.openDrawer(),
-            )
-          : null,
-      title: Padding(
-        padding: EdgeInsets.only(left: isMobile ? 0 : 20),
-        child: const Text(
-          'Ubaid Ullah',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 22,
-            letterSpacing: 2,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      actions: [
-        if (!isMobile) ...[
-          _navItem('Home', const PortfolioHomePage()),
-          _navItem('Projects', const ProjectsPage()),
-          _navItem('Experience', const ExperiencePage(), isSelected: true),
-          _navItem('Skills', const SkillsPage()),
-          _navItem('Contact', const ContactPage()),
-          const SizedBox(width: 40),
-        ],
-      ],
     );
   }
 
@@ -273,71 +223,79 @@ class _ExperiencePageState extends State<ExperiencePage> {
   }
 
   Widget _buildExperienceTimeline() {
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+
+    final experiences = [
+      const ExperienceItem(
+        title: 'Frontend Flutter Developer',
+        company: 'Precise',
+        period: 'Jan 2024 - Present',
+        location: 'Remote',
+        employmentType: 'Full-time',
+        isFirst: true,
+        isCurrent: true,
+        technologies: ['Flutter', 'Riverpod', 'Firebase', 'Material 3', 'Dart', 'CI/CD', 'GitHub Actions', 'Figma'],
+        responsibilities: [
+          'Architected a highly scalable, multi-tenant Flutter application serving 1M+ active users.',
+          'Implemented complex state management using Riverpod and customized a design system mapping directly to Material 3 tokens.',
+          'Optimized app performance, achieving 60 FPS on low-end devices via Isolate-based computing.',
+          'Integrated real-time data sync using Firestore and optimized offline capabilities.',
+          'Collaborated with cross-functional teams to define, design, and ship new features.'
+        ],
+        achievements: [
+          'Improved application performance by 40% through isolate-based computation.',
+          'Reduced codebase size by 30% by implementing a custom reusable design system.',
+          'Successfully launched 3 major feature sets ahead of schedule.'
+        ],
+      ),
+      const ExperienceItem(
+        title: 'Mobile Application Developer',
+        company: 'Freelance / Agency',
+        period: 'June 2023 - Dec 2023',
+        location: 'Global / Hybrid',
+        employmentType: 'Contract',
+        technologies: ['Flutter', 'BLE', 'IoT', 'REST API', 'Provider', 'Figma', 'Node.js', 'PostgreSQL'],
+        responsibilities: [
+          'Transitioned primary tech stack from React Native to Flutter for better performance and animation fluidity.',
+          'Developed custom IoT companion apps with complex BLE communication protocols.',
+          'Collaborated with international designers to implement pixel-perfect Figma designs.',
+          'Maintained a 99.9% crash-free rate across multiple production apps.'
+        ],
+        achievements: [
+          'Successfully delivered 5+ production-grade mobile applications.',
+          'Developed a reusable IoT communication layer used across 3 distinct projects.'
+        ],
+      ),
+      const ExperienceItem(
+        title: 'Computer Science Scholar',
+        company: 'University of Peshawar',
+        period: '2022 - 2026',
+        location: 'Peshawar, PK',
+        employmentType: 'Education',
+        isLast: true,
+        technologies: ['C++', 'Data Structures', 'Algorithms', 'Mobile Computing', 'UI/UX Design', 'Discrete Math'],
+        responsibilities: [
+          'Focused on algorithmic efficiency and high-performance computing.',
+          'Lead developer for the University Mobile Portal project.',
+          'Active member of the Competitive Programming Society.',
+          'Research Lead for \"AI-driven Mobile Optimization\" project.'
+        ],
+        achievements: [
+          'Top 5% of class in Data Structures and Algorithm analysis.',
+          'Winner of \"Best Mobile App Architecture\" at 2023 University Hackathon.',
+          'Achieved 30% reduction in battery consumption in mobile research project.'
+        ],
+      ),
+    ];
+
     return Column(
-      children: [
-        const ExperienceItem(
-          title: 'Frontend Flutter Developer',
-          company: 'Precise',
-          period: 'Jan 2024 - Present',
-          location: 'Remote',
-          employmentType: 'Full-time',
-          isFirst: true,
-          isCurrent: true,
-          technologies: ['Flutter', 'Riverpod', 'Firebase', 'Material 3', 'Dart', 'CI/CD', 'GitHub Actions', 'Figma'],
-          responsibilities: [
-            'Architected a highly scalable, multi-tenant Flutter application serving 1M+ active users.',
-            'Implemented complex state management using Riverpod and customized a design system mapping directly to Material 3 tokens.',
-            'Optimized app performance, achieving 60 FPS on low-end devices via Isolate-based computing.',
-            'Integrated real-time data sync using Firestore and optimized offline capabilities.',
-            'Collaborated with cross-functional teams to define, design, and ship new features.'
-          ],
-          achievements: [
-            'Improved application performance by 40% through isolate-based computation.',
-            'Reduced codebase size by 30% by implementing a custom reusable design system.',
-            'Successfully launched 3 major feature sets ahead of schedule.'
-          ],
-        ).animate().fadeIn(delay: 600.ms).slideX(begin: -0.05),
-
-        const ExperienceItem(
-          title: 'Mobile Application Developer',
-          company: 'Freelance / Agency',
-          period: 'June 2023 - Dec 2023',
-          location: 'Global / Hybrid',
-          employmentType: 'Contract',
-          technologies: ['Flutter', 'BLE', 'IoT', 'REST API', 'Provider', 'Figma', 'Node.js', 'PostgreSQL'],
-          responsibilities: [
-            'Transitioned primary tech stack from React Native to Flutter for better performance and animation fluidity.',
-            'Developed custom IoT companion apps with complex BLE communication protocols.',
-            'Collaborated with international designers to implement pixel-perfect Figma designs.',
-            'Maintained a 99.9% crash-free rate across multiple production apps.'
-          ],
-          achievements: [
-            'Successfully delivered 5+ production-grade mobile applications.',
-            'Developed a reusable IoT communication layer used across 3 distinct projects.'
-          ],
-        ).animate().fadeIn(delay: 800.ms).slideX(begin: -0.05),
-
-        const ExperienceItem(
-          title: 'Computer Science Scholar',
-          company: 'University of Peshawar',
-          period: '2022 - 2026',
-          location: 'Peshawar, PK',
-          employmentType: 'Education',
-          isLast: true,
-          technologies: ['C++', 'Data Structures', 'Algorithms', 'Mobile Computing', 'UI/UX Design', 'Discrete Math'],
-          responsibilities: [
-            'Focused on algorithmic efficiency and high-performance computing.',
-            'Lead developer for the University Mobile Portal project.',
-            'Active member of the Competitive Programming Society.',
-            'Research Lead for \"AI-driven Mobile Optimization\" project.'
-          ],
-          achievements: [
-            'Top 5% of class in Data Structures and Algorithm analysis.',
-            'Winner of \"Best Mobile App Architecture\" at 2023 University Hackathon.',
-            'Achieved 30% reduction in battery consumption in mobile research project.'
-          ],
-        ).animate().fadeIn(delay: 1.seconds).slideX(begin: -0.05),
-      ],
+      children: experiences.asMap().entries.map((entry) {
+        final index = entry.key;
+        final item = entry.value;
+        if (reduceMotion) return item;
+        return item.animate().fadeIn(delay: (600 + (index * 200)).ms).slideX(begin: -0.05);
+      }).toList(),
     );
   }
 
@@ -400,10 +358,6 @@ class _ExperiencePageState extends State<ExperiencePage> {
   Widget _ctaButton(String text, IconData icon, {required bool isPrimary}) {
     return _AnimatedCTAButton(text: text, icon: icon, isPrimary: isPrimary);
   }
-
-  Widget _navItem(String title, Widget destination, {bool isSelected = false}) {
-    return _AnimatedNavItem(title: title, isSelected: isSelected, destination: destination);
-  }
 }
 
 class _AnimatedCTAButton extends StatefulWidget {
@@ -422,111 +376,55 @@ class _AnimatedCTAButtonState extends State<_AnimatedCTAButton> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOutQuart,
-        transform: Matrix4.identity()..translate(0.0, _isHovered ? -8.0 : 0.0),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              if (_isHovered)
-                BoxShadow(
-                  color: (widget.isPrimary ? const Color(0xFF6C63FF) : const Color(0xFF00FF94)).withValues(alpha: 0.4),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: widget.isPrimary 
-                  ? const Color(0xFF6C63FF) 
-                  : Colors.white.withValues(alpha: 0.05),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 26),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: widget.isPrimary 
-                    ? BorderSide.none 
-                    : BorderSide(color: _isHovered ? const Color(0xFF00FF94) : Colors.white10),
-              ),
-              elevation: 0,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  widget.text,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-                ),
-                const SizedBox(width: 12),
-                Icon(widget.icon, size: 22).animate(target: _isHovered ? 1 : 0).moveX(end: 8).shake(hz: 3),
+    return Focus(
+      onFocusChange: (focused) => setState(() => _isHovered = focused),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutQuart,
+          transform: Matrix4.identity()..translate(0.0, _isHovered ? -8.0 : 0.0),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                if (_isHovered)
+                  BoxShadow(
+                    color: (widget.isPrimary ? const Color(0xFF6C63FF) : const Color(0xFF00FF94)).withValues(alpha: 0.4),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AnimatedNavItem extends StatefulWidget {
-  final String title;
-  final bool isSelected;
-  final Widget destination;
-
-  const _AnimatedNavItem({required this.title, this.isSelected = false, required this.destination});
-
-  @override
-  State<_AnimatedNavItem> createState() => _AnimatedNavItemState();
-}
-
-class _AnimatedNavItemState extends State<_AnimatedNavItem> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: TextButton(
-        onPressed: widget.isSelected
-            ? null
-            : () => Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => widget.destination)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.title,
-                style: TextStyle(
-                  color: widget.isSelected || _isHovered ? Colors.white : Colors.white60,
-                  fontWeight: widget.isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 14,
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: widget.isPrimary 
+                    ? const Color(0xFF6C63FF) 
+                    : Colors.white.withValues(alpha: 0.05),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 26),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: widget.isPrimary 
+                      ? BorderSide.none 
+                      : BorderSide(color: _isHovered ? const Color(0xFF00FF94) : Colors.white10),
                 ),
+                elevation: 0,
               ),
-              const SizedBox(height: 4),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: 2,
-                width: widget.isSelected || _isHovered ? 24 : 0,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6C63FF),
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: [
-                    if (widget.isSelected || _isHovered)
-                      BoxShadow(color: const Color(0xFF6C63FF).withValues(alpha: 0.6), blurRadius: 6),
-                  ],
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.text,
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Icon(widget.icon, size: 22).animate(target: _isHovered ? 1 : 0).moveX(end: 8).shake(hz: 3),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -539,33 +437,37 @@ class _ExperienceBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(color: const Color(0xFF02020A)),
-        // Subtle animated grid
-        Opacity(
-          opacity: 0.2,
-          child: CustomPaint(
-            size: Size.infinite,
-            painter: GridPainter(),
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+    return RepaintBoundary(
+      child: Stack(
+        children: [
+          Container(color: const Color(0xFF02020A)),
+          // Subtle animated grid
+          Opacity(
+            opacity: 0.2,
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: GridPainter(),
+            ),
           ),
-        ),
-        // Large blurred aurora blobs
-        Positioned(
-          top: -200,
-          right: -100,
-          child: _AuroraBlob(color: const Color(0xFF6C63FF).withValues(alpha: 0.08), size: 900),
-        ).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(begin: 0, end: 120, duration: 10.seconds),
-        
-        Positioned(
-          bottom: -150,
-          left: -250,
-          child: _AuroraBlob(color: const Color(0xFF00FF94).withValues(alpha: 0.05), size: 1000),
-        ).animate(onPlay: (c) => c.repeat(reverse: true)).moveX(begin: 0, end: 180, duration: 15.seconds),
-        
-        // Floating decorative particles/stars
-        const _FloatingStars(),
-      ],
+          // Large blurred aurora blobs
+          Positioned(
+            top: -200,
+            right: -100,
+            child: _AuroraBlob(color: const Color(0xFF6C63FF).withValues(alpha: 0.08), size: 900),
+          ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveY(begin: 0, end: 120, duration: 10.seconds),
+          
+          Positioned(
+            bottom: -150,
+            left: -250,
+            child: _AuroraBlob(color: const Color(0xFF00FF94).withValues(alpha: 0.05), size: 1000),
+          ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveX(begin: 0, end: 180, duration: 15.seconds),
+          
+          // Floating decorative particles/stars
+          if (!reduceMotion) const _FloatingStars(),
+        ],
+      ),
     );
   }
 }

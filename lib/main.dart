@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'presentation/pages/portfolio_home_page.dart';
+import 'core/app_router.dart';
 
 void main() {
   runApp(const PortfolioApp());
@@ -10,7 +10,7 @@ class PortfolioApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Ubaid Ullah Portfolio',
       theme: ThemeData(
@@ -34,8 +34,10 @@ class PortfolioApp extends StatelessWidget {
           bodyMedium: TextStyle(fontFamily: 'regular'),
           bodySmall: TextStyle(fontFamily: 'regular'),
         ),
+        // Adding a default focus theme for keyboard accessibility
+        focusColor: const Color(0xFF6C63FF).withValues(alpha: 0.3),
       ),
-      home: const PortfolioHomePage(),
+      routerConfig: AppRouter.router,
     );
   }
 }

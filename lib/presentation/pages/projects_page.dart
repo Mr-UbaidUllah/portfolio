@@ -1,15 +1,12 @@
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../core/app_breakpoints.dart';
+import '../widgets/portfolio_navbar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/project_card.dart';
 import '../widgets/footer.dart';
 import '../widgets/grid_painter.dart';
-import 'portfolio_home_page.dart';
-import 'experience_page.dart';
-import 'skills_page.dart';
-import 'contact_page.dart';
 
 class ProjectsPage extends StatefulWidget {
   const ProjectsPage({super.key});
@@ -18,9 +15,12 @@ class ProjectsPage extends StatefulWidget {
   State<ProjectsPage> createState() => _ProjectsPageState();
 }
 
-class _ProjectsPageState extends State<ProjectsPage> {
+class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<Offset> _mousePosition = ValueNotifier(Offset.zero);
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
@@ -31,9 +31,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 800;
+    final isMobile = AppBreakpoints.isMobile(size.width);
 
     return Scaffold(
       key: scaffoldKey,
@@ -75,57 +76,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
             CustomScrollView(
               controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
               slivers: [
-                // Glassmorphism Navbar
-                SliverAppBar(
-                  pinned: true,
-                  floating: true,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  expandedHeight: 80,
-                  collapsedHeight: 70,
-                  flexibleSpace: ClipRRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF02020A).withValues(alpha: 0.7),
-                          border: const Border(
-                            bottom: BorderSide(color: Colors.white10, width: 0.5),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ).animate().fadeIn(duration: 800.ms).slideY(begin: -0.2),
-                  leading: isMobile
-                      ? IconButton(
-                          icon: const Icon(Icons.menu, color: Color(0xFF6C63FF)),
-                          onPressed: () => scaffoldKey.currentState?.openDrawer(),
-                        )
-                      : null,
-                  title: Padding(
-                    padding: EdgeInsets.only(left: isMobile ? 0 : 40),
-                    child: const Text(
-                      'Ubaid Ullah',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 22,
-                        letterSpacing: 2,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ).animate().fadeIn(duration: 800.ms).slideY(begin: -0.2),
-                  actions: [
-                    if (!isMobile) ...[
-                      _navItem('Home', const PortfolioHomePage()),
-                      _navItem('Projects', const ProjectsPage(), isSelected: true),
-                      _navItem('Experience', const ExperiencePage()),
-                      _navItem('Skills', const SkillsPage()),
-                      _navItem('Contact', const ContactPage()),
-                      const SizedBox(width: 40),
-                    ],
-                  ],
-                ),
+                PortfolioNavbar(isMobile: isMobile, scaffoldKey: scaffoldKey),
 
                 SliverToBoxAdapter(
                   child: Center(
@@ -186,17 +139,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                             const SizedBox(height: 80),
 
                             // Project Grid with Staggered Reveal
-                            isMobile
-                                ? Column(children: _buildProjects(isMobile))
-                                : GridView.count(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 32,
-                                    mainAxisSpacing: 32,
-                                    childAspectRatio: 0.8,
-                                    children: _buildProjects(isMobile),
-                                  ),
+                            _buildProjectsGrid(isMobile, size.width),
 
                             const SizedBox(height: 120),
                             const Footer().animate().fadeIn(delay: 400.ms),
@@ -214,8 +157,51 @@ class _ProjectsPageState extends State<ProjectsPage> {
     );
   }
 
-  List<Widget> _buildProjects(bool isMobile) {
-    final projects = [
+  Widget _buildProjectsGrid(bool isMobile, double screenWidth) {
+    final projects = _getProjectData();
+    
+    if (isMobile) {
+      return Column(
+        children: projects.asMap().entries.map((entry) => Padding(
+          padding: const EdgeInsets.only(bottom: 32),
+          child: _animateProject(entry.value, entry.key),
+        )).toList(),
+      );
+    }
+
+    int crossAxisCount = 2;
+    if (screenWidth > AppBreakpoints.largeDesktop) {
+      crossAxisCount = 3;
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 32,
+        mainAxisSpacing: 32,
+        childAspectRatio: 0.8,
+      ),
+      itemCount: projects.length,
+      itemBuilder: (context, index) => _animateProject(projects[index], index),
+    );
+  }
+
+  Widget _animateProject(Widget project, int index) {
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+    if (reduceMotion) return project;
+
+    return project
+        .animate()
+        .fadeIn(delay: (200 + (index * 100)).ms, duration: 800.ms)
+        .slideY(begin: 0.1, curve: Curves.easeOutBack)
+        .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack);
+  }
+
+  List<Widget> _getProjectData() {
+    return [
       ProjectCard(
         title: 'Fit Mind',
         description: 'A comprehensive health and activity tracker. Features real-time syncing, custom biometric charts, and a highly interactive dashboard with micro-interactions.',
@@ -234,82 +220,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
         onLiveDemo: () {},
         onGitHub: () {},
       ),
-      // Add more projects as needed
     ];
-
-    return projects.asMap().entries.map((entry) {
-      final index = entry.key;
-      final project = entry.value;
-
-      return project
-          .animate()
-          .fadeIn(delay: (400 + (index * 200)).ms, duration: 800.ms)
-          .slideY(begin: 0.1, curve: Curves.easeOutBack)
-          .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack);
-    }).toList();
-  }
-
-  Widget _navItem(String title, Widget destination, {bool isSelected = false}) {
-    return _AnimatedNavItem(title: title, isSelected: isSelected, destination: destination);
-  }
-}
-
-class _AnimatedNavItem extends StatefulWidget {
-  final String title;
-  final bool isSelected;
-  final Widget destination;
-
-  const _AnimatedNavItem({required this.title, this.isSelected = false, required this.destination});
-
-  @override
-  State<_AnimatedNavItem> createState() => _AnimatedNavItemState();
-}
-
-class _AnimatedNavItemState extends State<_AnimatedNavItem> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: TextButton(
-        onPressed: widget.isSelected
-            ? null
-            : () => Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => widget.destination)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.title,
-                style: TextStyle(
-                  color: widget.isSelected || _isHovered ? Colors.white : Colors.white60,
-                  fontWeight: widget.isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 4),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: 2,
-                width: widget.isSelected || _isHovered ? 20 : 0,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6C63FF),
-                  borderRadius: BorderRadius.circular(2),
-                  boxShadow: [
-                    if (widget.isSelected || _isHovered)
-                      BoxShadow(color: const Color(0xFF6C63FF).withValues(alpha: 0.5), blurRadius: 4),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ).animate().fadeIn(duration: 800.ms).slideY(begin: -0.2);
   }
 }
 
@@ -318,39 +229,44 @@ class _ProjectsBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Base dark background
-        Container(color: const Color(0xFF02020A)),
-        
-        // Grid Pattern
-        Opacity(
-          opacity: 0.4,
-          child: CustomPaint(
-            size: Size.infinite,
-            painter: GridPainter(),
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
+    return RepaintBoundary(
+      child: Stack(
+        children: [
+          // Base dark background
+          Container(color: const Color(0xFF02020A)),
+          
+          // Grid Pattern
+          Opacity(
+            opacity: 0.4,
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: GridPainter(),
+            ),
           ),
-        ),
 
-        // Animated Code Snippets (Background)
-        const _BackgroundCodeSnippets(),
+          // Animated Code Snippets (Background)
+          if (!reduceMotion) const _BackgroundCodeSnippets(),
 
-        // Blurred Aurora Blobs
-        Positioned(
-          top: 200,
-          left: -150,
-          child: _AuroraBlob(color: const Color(0xFF6C63FF).withValues(alpha: 0.07), size: 600),
-        ).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(begin: 0, end: 100, duration: 10.seconds),
-        
-        Positioned(
-          bottom: 100,
-          right: -200,
-          child: _AuroraBlob(color: const Color(0xFF00FF94).withValues(alpha: 0.05), size: 700),
-        ).animate(onPlay: (c) => c.repeat(reverse: true)).moveX(begin: 0, end: -100, duration: 15.seconds),
+          // Blurred Aurora Blobs
+          Positioned(
+            top: 200,
+            left: -150,
+            child: _AuroraBlob(color: const Color(0xFF6C63FF).withValues(alpha: 0.07), size: 600),
+          ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveY(begin: 0, end: 100, duration: 10.seconds),
+          
+          Positioned(
+            bottom: 100,
+            right: -200,
+            child: _AuroraBlob(color: const Color(0xFF00FF94).withValues(alpha: 0.05), size: 700),
+          ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveX(begin: 0, end: -100, duration: 15.seconds),
 
-        // Floating particles
-        ...List.generate(15, (index) => _FloatingParticle(index: index)),
-      ],
+          // Floating particles
+          if (!reduceMotion)
+            ...List.generate(15, (index) => _FloatingParticle(index: index)),
+        ],
+      ),
     );
   }
 }

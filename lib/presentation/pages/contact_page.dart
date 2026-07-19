@@ -2,14 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/app_breakpoints.dart';
+import '../widgets/portfolio_navbar.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/contact_form.dart';
 import '../widgets/footer.dart';
 import '../widgets/available_badge.dart';
-import 'portfolio_home_page.dart';
-import 'projects_page.dart';
-import 'experience_page.dart';
-import 'skills_page.dart';
 
 class ContactPage extends StatefulWidget {
   const ContactPage({super.key});
@@ -18,26 +16,32 @@ class ContactPage extends StatefulWidget {
   State<ContactPage> createState() => _ContactPageState();
 }
 
-class _ContactPageState extends State<ContactPage> {
+class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _showBackToTop = false;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      final show = _scrollController.offset > 400;
-      if (show != _showBackToTop) {
-        setState(() {
-          _showBackToTop = show;
-        });
-      }
-    });
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final show = _scrollController.offset > 400;
+    if (show != _showBackToTop) {
+      setState(() {
+        _showBackToTop = show;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
@@ -51,8 +55,9 @@ class _ContactPageState extends State<ContactPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 900;
+    final isMobile = AppBreakpoints.isMobile(size.width);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -63,6 +68,7 @@ class _ContactPageState extends State<ContactPage> {
               onPressed: () => _scrollController.animateTo(0,
                   duration: 800.ms, curve: Curves.easeInOut),
               backgroundColor: const Color(0xFF6C63FF),
+              tooltip: 'Back to top',
               child: const Icon(Icons.arrow_upward, color: Colors.white),
             ).animate().scale().fadeIn()
           : null,
@@ -73,8 +79,9 @@ class _ContactPageState extends State<ContactPage> {
           
           CustomScrollView(
             controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
             slivers: [
-              _buildAppBar(context, isMobile, _scaffoldKey),
+              PortfolioNavbar(isMobile: isMobile, scaffoldKey: _scaffoldKey),
               SliverToBoxAdapter(
                 child: Center(
                   child: ConstrainedBox(
@@ -124,45 +131,6 @@ class _ContactPageState extends State<ContactPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context, bool isMobile, GlobalKey<ScaffoldState> key) {
-    return SliverAppBar(
-      pinned: true,
-      backgroundColor: const Color(0xFF02020A).withValues(alpha: 0.8),
-      elevation: 0,
-      automaticallyImplyLeading: false,
-      flexibleSpace: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(color: Colors.transparent),
-        ),
-      ),
-      title: Row(
-        children: [
-          if (isMobile)
-            IconButton(
-              icon: const Icon(Icons.menu, color: Color(0xFF6C63FF)),
-              onPressed: () => key.currentState?.openDrawer(),
-            ),
-          const SizedBox(width: 20),
-          const Text(
-            'Ubaid Ullah',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
-          ),
-        ],
-      ),
-      actions: [
-        if (!isMobile) ...[
-          _navItem(context, 'Home', const PortfolioHomePage()),
-          _navItem(context, 'Projects', const ProjectsPage()),
-          _navItem(context, 'Experience', const ExperiencePage()),
-          _navItem(context, 'Skills', const SkillsPage()),
-          _navItem(context, 'Contact', const ContactPage(), isSelected: true),
-          const SizedBox(width: 40),
-        ],
-      ],
     );
   }
 
@@ -216,6 +184,8 @@ class _ContactPageState extends State<ContactPage> {
   }
 
   Widget _buildIntroSection() {
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
+                             MediaQuery.of(context).disableAnimations;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -245,28 +215,30 @@ class _ContactPageState extends State<ContactPage> {
         _buildAvailabilityItem("Open Source Collaboration", true),
         const SizedBox(height: 48),
         // Illustration or Graphic Placeholder
-        Container(
-          height: 200,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF6C63FF).withValues(alpha: 0.05),
-                const Color(0xFF00FF94).withValues(alpha: 0.05),
-              ],
+        RepaintBoundary(
+          child: Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF6C63FF).withValues(alpha: 0.05),
+                  const Color(0xFF00FF94).withValues(alpha: 0.05),
+                ],
+              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Center(
-            child: Icon(
-              Icons.code_rounded,
-              size: 80,
-              color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+            child: Center(
+              child: Icon(
+                Icons.code_rounded,
+                size: 80,
+                color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+              ),
             ),
-          ),
-        ).animate(onPlay: (c) => c.repeat(reverse: true))
-         .moveY(begin: -10, end: 10, duration: 2.seconds, curve: Curves.easeInOut),
+          ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true))
+           .moveY(begin: -10, end: 10, duration: 2.seconds, curve: Curves.easeInOut),
+        ),
       ],
     );
   }
@@ -274,23 +246,26 @@ class _ContactPageState extends State<ContactPage> {
   Widget _buildAvailabilityItem(String text, bool available) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          Icon(
-            Icons.check_circle_rounded,
-            color: available ? const Color(0xFF00FF94) : Colors.grey,
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
+      child: Semantics(
+        label: '$text: ${available ? 'Available' : 'Unavailable'}',
+        child: Row(
+          children: [
+            Icon(
+              Icons.check_circle_rounded,
+              color: available ? const Color(0xFF00FF94) : Colors.grey,
+              size: 20,
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -403,27 +378,41 @@ class _ContactPageState extends State<ContactPage> {
   }
 
   Widget _buildCTAButton(String text, IconData icon, bool primary, VoidCallback onTap) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primary ? const Color(0xFF6C63FF) : Colors.transparent,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: primary ? BorderSide.none : BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        elevation: primary ? 10 : 0,
-        shadowColor: primary ? const Color(0xFF6C63FF).withValues(alpha: 0.4) : null,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(width: 12),
-          Icon(icon, size: 20),
-        ],
-      ),
+    bool isHovered = false;
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Focus(
+          onFocusChange: (focused) => setState(() => isHovered = focused),
+          child: MouseRegion(
+            onEnter: (_) => setState(() => isHovered = true),
+            onExit: (_) => setState(() => isHovered = false),
+            child: ElevatedButton(
+              onPressed: onTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primary ? const Color(0xFF6C63FF) : Colors.transparent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: primary 
+                      ? (isHovered ? const BorderSide(color: Colors.white, width: 2) : BorderSide.none)
+                      : BorderSide(color: isHovered ? const Color(0xFF6C63FF) : Colors.white.withValues(alpha: 0.1)),
+                ),
+                elevation: primary ? 10 : 0,
+                shadowColor: primary ? const Color(0xFF6C63FF).withValues(alpha: 0.4) : null,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 12),
+                  Icon(icon, size: 20),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
     );
   }
 
@@ -465,33 +454,6 @@ class _ContactPageState extends State<ContactPage> {
       ),
     );
   }
-
-  Widget _navItem(BuildContext context, String title, Widget destination, {bool isSelected = false}) {
-    return TextButton(
-      onPressed: isSelected ? null : () {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => destination,
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            settings: RouteSettings(name: title),
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: isSelected ? const Color(0xFF6C63FF) : Colors.white70,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _HoverCard extends StatefulWidget {
@@ -508,30 +470,33 @@ class _HoverCardState extends State<_HoverCard> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          transform: _isHovered ? Matrix4.translationValues(0, -8, 0) : Matrix4.identity(),
-          decoration: BoxDecoration(
-            color: _isHovered ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.02),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: _isHovered ? const Color(0xFF6C63FF).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.05),
+    return Focus(
+      onFocusChange: (focused) => setState(() => _isHovered = focused),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+            transform: _isHovered ? Matrix4.translationValues(0, -8, 0) : Matrix4.identity(),
+            decoration: BoxDecoration(
+              color: _isHovered ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: _isHovered ? const Color(0xFF6C63FF).withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.05),
+              ),
+              boxShadow: _isHovered ? [
+                BoxShadow(
+                  color: const Color(0xFF6C63FF).withValues(alpha: 0.1),
+                  blurRadius: 30,
+                  spreadRadius: 5,
+                )
+              ] : [],
             ),
-            boxShadow: _isHovered ? [
-              BoxShadow(
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.1),
-                blurRadius: 30,
-                spreadRadius: 5,
-              )
-            ] : [],
+            child: widget.child,
           ),
-          child: widget.child,
         ),
       ),
     );
@@ -544,60 +509,62 @@ class _BackgroundEffects extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return Stack(
-      children: [
-        // Top right glow
-        Positioned(
-          top: -200,
-          right: -100,
-          child: Container(
-            width: 600,
-            height: 600,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF6C63FF).withValues(alpha: 0.05),
-            ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-        ),
-        // Middle left glow
-        Positioned(
-          top: size.height * 0.4,
-          left: -150,
-          child: Container(
-            width: 500,
-            height: 500,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF00FF94).withValues(alpha: 0.03),
-            ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
-              child: Container(color: Colors.transparent),
+    return RepaintBoundary(
+      child: Stack(
+        children: [
+          // Top right glow
+          Positioned(
+            top: -200,
+            right: -100,
+            child: Container(
+              width: 600,
+              height: 600,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF6C63FF).withValues(alpha: 0.05),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+                child: Container(color: Colors.transparent),
+              ),
             ),
           ),
-        ),
-        // Bottom right glow
-        Positioned(
-          bottom: -100,
-          right: -50,
-          child: Container(
-            width: 400,
-            height: 400,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF6C63FF).withValues(alpha: 0.04),
-            ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-              child: Container(color: Colors.transparent),
+          // Middle left glow
+          Positioned(
+            top: size.height * 0.4,
+            left: -150,
+            child: Container(
+              width: 500,
+              height: 500,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF00FF94).withValues(alpha: 0.03),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
+                child: Container(color: Colors.transparent),
+              ),
             ),
           ),
-        ),
-      ],
+          // Bottom right glow
+          Positioned(
+            bottom: -100,
+            right: -50,
+            child: Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF6C63FF).withValues(alpha: 0.04),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
