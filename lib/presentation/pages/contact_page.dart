@@ -76,7 +76,7 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
       body: Stack(
         children: [
           // Background Effects
-          const _BackgroundEffects(),
+          const RepaintBoundary(child: _BackgroundEffects()),
           
           CustomScrollView(
             controller: _scrollController,
@@ -215,7 +215,6 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
         _buildAvailabilityItem("Open to Full-Time Opportunities", true),
         _buildAvailabilityItem("Open Source Collaboration", true),
         const SizedBox(height: 48),
-        // Illustration or Graphic Placeholder
         RepaintBoundary(
           child: Container(
             height: 200,
@@ -278,7 +277,7 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
       crossAxisCount: isMobile ? 1 : 3,
       crossAxisSpacing: 24,
       mainAxisSpacing: 24,
-      childAspectRatio: isMobile ? 2.5 : 1.5,
+      mainAxisExtent: isMobile ? 160 : 200, // Fixed height to prevent overflow
       children: [
         _buildContactCard(
           Icons.email_outlined,
@@ -318,12 +317,15 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
               style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 14),
             ),
             const SizedBox(height: 4),
-            Text(
-              info,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                info,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -510,62 +512,57 @@ class _BackgroundEffects extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return RepaintBoundary(
-      child: Stack(
-        children: [
-          // Top right glow
-          Positioned(
-            top: -200,
-            right: -100,
-            child: Container(
-              width: 600,
-              height: 600,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.05),
-              ),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
-                child: Container(color: Colors.transparent),
-              ),
+    return Stack(
+      children: [
+        Positioned(
+          top: -200,
+          right: -100,
+          child: Container(
+            width: 600,
+            height: 600,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.05),
+            ),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+              child: Container(color: Colors.transparent),
             ),
           ),
-          // Middle left glow
-          Positioned(
-            top: size.height * 0.4,
-            left: -150,
-            child: Container(
-              width: 500,
-              height: 500,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF00FF94).withValues(alpha: 0.03),
-              ),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
-                child: Container(color: Colors.transparent),
-              ),
+        ),
+        Positioned(
+          top: size.height * 0.4,
+          left: -150,
+          child: Container(
+            width: 500,
+            height: 500,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF00FF94).withValues(alpha: 0.03),
+            ),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
+              child: Container(color: Colors.transparent),
             ),
           ),
-          // Bottom right glow
-          Positioned(
-            bottom: -100,
-            right: -50,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF6C63FF).withValues(alpha: 0.04),
-              ),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-                child: Container(color: Colors.transparent),
-              ),
+        ),
+        Positioned(
+          bottom: -100,
+          right: -50,
+          child: Container(
+            width: 400,
+            height: 400,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.04),
+            ),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+              child: Container(color: Colors.transparent),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

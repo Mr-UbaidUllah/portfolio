@@ -112,7 +112,7 @@ class _SkillsPageState extends State<SkillsPage> with AutomaticKeepAliveClientMi
             'The technologies, tools, and frameworks I use to build modern, scalable, and high-performance applications.',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withValues(alpha: 0.6),
               height: 1.6,
             ),
           ),
@@ -150,7 +150,7 @@ class _SkillsPageState extends State<SkillsPage> with AutomaticKeepAliveClientMi
           subtitle,
           style: TextStyle(
             fontSize: 14,
-            color: Colors.white.withOpacity(0.4),
+            color: Colors.white.withValues(alpha: 0.4),
           ),
         ),
       ],
@@ -172,10 +172,10 @@ class _SkillsPageState extends State<SkillsPage> with AutomaticKeepAliveClientMi
                 duration: const Duration(milliseconds: 300),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF6C63FF) : Colors.white.withOpacity(0.05),
+                  color: isSelected ? const Color(0xFF6C63FF) : Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isSelected ? Colors.white24 : Colors.white.withOpacity(0.1),
+                    color: isSelected ? Colors.white24 : Colors.white.withValues(alpha: 0.1),
                   ),
                 ),
                 child: Row(
@@ -341,9 +341,9 @@ class _SkillsPageState extends State<SkillsPage> with AutomaticKeepAliveClientMi
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -390,7 +390,7 @@ class _AnimatedDivider extends StatelessWidget {
         borderRadius: BorderRadius.circular(1),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C63FF).withOpacity(0.5),
+            color: const Color(0xFF6C63FF).withValues(alpha: 0.5),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -412,12 +412,12 @@ class _BackgroundMesh extends StatelessWidget {
           Positioned(
             top: -100,
             right: -100,
-            child: _GlowBlob(color: const Color(0xFF6C63FF).withOpacity(0.1), size: 500),
+            child: _GlowBlob(color: const Color(0xFF6C63FF).withValues(alpha: 0.1), size: 500),
           ),
           Positioned(
             bottom: -200,
             left: -100,
-            child: _GlowBlob(color: const Color(0xFF00D2FF).withOpacity(0.1), size: 600),
+            child: _GlowBlob(color: const Color(0xFF00D2FF).withValues(alpha: 0.1), size: 600),
           ),
           const _DeveloperGrid(),
         ],
@@ -483,7 +483,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.2)
+      ..color = Colors.white.withValues(alpha: 0.2)
       ..strokeWidth = 0.5;
 
     const step = 40.0;

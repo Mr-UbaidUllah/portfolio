@@ -30,6 +30,8 @@ class AppRouter {
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
+          // Fixed: Removed unnecessary outer Scaffold to avoid nested Scaffolds
+          // which can cause issues with drawers, snackbars, and focus management.
           return PortfolioScaffold(navigationShell: navigationShell);
         },
         branches: [
@@ -89,8 +91,7 @@ class PortfolioScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: navigationShell,
-    );
+    // Fixed: Just return navigationShell. Nested Scaffolds are a common source of UI bugs.
+    return navigationShell;
   }
 }

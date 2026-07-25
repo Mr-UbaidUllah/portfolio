@@ -45,7 +45,7 @@ class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClie
         child: Stack(
           children: [
             // Premium Background Effects
-            const _ProjectsBackground(),
+            const RepaintBoundary(child: _ProjectsBackground()),
 
             // Mouse Follow Glow (Spotlight)
             if (!isMobile)
@@ -181,7 +181,7 @@ class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClie
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 32,
         mainAxisSpacing: 32,
-        childAspectRatio: 0.8,
+        mainAxisExtent: 680, // Fixed: Use mainAxisExtent to prevent RenderFlex overflow on small desktops
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) => _animateProject(projects[index], index),
@@ -231,42 +231,40 @@ class _ProjectsBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
                              MediaQuery.of(context).disableAnimations;
-    return RepaintBoundary(
-      child: Stack(
-        children: [
-          // Base dark background
-          Container(color: const Color(0xFF02020A)),
-          
-          // Grid Pattern
-          Opacity(
-            opacity: 0.4,
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: GridPainter(),
-            ),
+    return Stack(
+      children: [
+        // Base dark background
+        Container(color: const Color(0xFF02020A)),
+        
+        // Grid Pattern
+        Opacity(
+          opacity: 0.4,
+          child: CustomPaint(
+            size: Size.infinite,
+            painter: GridPainter(),
           ),
+        ),
 
-          // Animated Code Snippets (Background)
-          if (!reduceMotion) const _BackgroundCodeSnippets(),
+        // Animated Code Snippets (Background)
+        if (!reduceMotion) const _BackgroundCodeSnippets(),
 
-          // Blurred Aurora Blobs
-          Positioned(
-            top: 200,
-            left: -150,
-            child: _AuroraBlob(color: const Color(0xFF6C63FF).withValues(alpha: 0.07), size: 600),
-          ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveY(begin: 0, end: 100, duration: 10.seconds),
-          
-          Positioned(
-            bottom: 100,
-            right: -200,
-            child: _AuroraBlob(color: const Color(0xFF00FF94).withValues(alpha: 0.05), size: 700),
-          ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveX(begin: 0, end: -100, duration: 15.seconds),
+        // Blurred Aurora Blobs
+        Positioned(
+          top: 200,
+          left: -150,
+          child: _AuroraBlob(color: const Color(0xFF6C63FF).withValues(alpha: 0.07), size: 600),
+        ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveY(begin: 0, end: 100, duration: 10.seconds),
+        
+        Positioned(
+          bottom: 100,
+          right: -200,
+          child: _AuroraBlob(color: const Color(0xFF00FF94).withValues(alpha: 0.05), size: 700),
+        ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveX(begin: 0, end: -100, duration: 15.seconds),
 
-          // Floating particles
-          if (!reduceMotion)
-            ...List.generate(15, (index) => _FloatingParticle(index: index)),
-        ],
-      ),
+        // Floating particles
+        if (!reduceMotion)
+          ...List.generate(15, (index) => _FloatingParticle(index: index)),
+      ],
     );
   }
 }

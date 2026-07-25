@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'nav_item.dart';
+import 'resume_preview_modal.dart';
 
 class PortfolioNavbar extends StatelessWidget {
   final bool isMobile;
@@ -42,42 +43,46 @@ class PortfolioNavbar extends StatelessWidget {
           ? IconButton(
               icon: const Icon(Icons.menu, color: Color(0xFF6C63FF)),
               onPressed: () => scaffoldKey?.currentState?.openDrawer(),
-              tooltip: 'Open Menu',
+              tooltip: 'Open Navigation Menu',
             )
           : null,
       title: Padding(
         padding: EdgeInsets.only(left: isMobile ? 0 : 40),
-        child: InkWell(
-          onTap: () => context.go('/home'),
-          borderRadius: BorderRadius.circular(8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF00FF94),
-                  shape: BoxShape.circle,
-                ),
-              ).animate(onPlay: (c) => c.repeat()).scale(begin: const Offset(1, 1), end: const Offset(2, 2), duration: 1.seconds).fadeOut(),
-              const SizedBox(width: 12),
-              const Flexible(
-                child: Text(
-                  'UBAID',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 22,
-                    letterSpacing: 2,
-                    color: Colors.white,
+        child: Semantics(
+          label: 'Ubaid Ullah Portfolio Home',
+          button: true,
+          child: InkWell(
+            onTap: () => context.go('/home'),
+            borderRadius: BorderRadius.circular(8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF00FF94),
+                    shape: BoxShape.circle,
+                  ),
+                ).animate(onPlay: (c) => c.repeat()).scale(begin: const Offset(1, 1), end: const Offset(2, 2), duration: 1.seconds).fadeOut(),
+                const SizedBox(width: 12),
+                const Flexible(
+                  child: Text(
+                    'UBAID',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 22,
+                      letterSpacing: 2,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ).animate().fadeIn(duration: 800.ms).slideX(begin: -0.2),
-      ),
+        ),
+      ).animate().fadeIn(duration: 800.ms).slideX(begin: -0.2),
       actions: [
         if (!isMobile) ...[
           NavItem(title: 'Home', routePath: '/home', isSelected: location == '/home'),
@@ -85,7 +90,28 @@ class PortfolioNavbar extends StatelessWidget {
           NavItem(title: 'Experience', routePath: '/experience', isSelected: location == '/experience'),
           NavItem(title: 'Skills', routePath: '/skills', isSelected: location == '/skills'),
           NavItem(title: 'Contact', routePath: '/contact', isSelected: location == '/contact'),
+          const SizedBox(width: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            child: ElevatedButton.icon(
+              onPressed: () => ResumePreviewModal.show(context),
+              icon: const Icon(Icons.description_outlined, size: 18),
+              label: const Text('Resume'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6C63FF),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ),
           const SizedBox(width: 40),
+        ] else ...[
+          IconButton(
+            onPressed: () => ResumePreviewModal.show(context),
+            icon: const Icon(Icons.description_outlined, color: Color(0xFF6C63FF)),
+            tooltip: 'Resume Preview',
+          ),
+          const SizedBox(width: 10),
         ],
       ],
     );

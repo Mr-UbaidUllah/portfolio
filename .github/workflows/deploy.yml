@@ -18,7 +18,7 @@ jobs:
       - run: flutter pub get
 
       # Replace 'portfolio_project' with your exact GitHub repository name
-      - run: flutter build web --release --base-href "/portfolio_project/"
+      - run: flutter build web --release --base-href "/portfolio/"
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
