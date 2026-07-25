@@ -197,6 +197,7 @@ class _ProjectCardState extends State<ProjectCard> {
           height: 250,
           width: double.infinity,
           child: Stack(
+            fit: StackFit.expand,
             children: [
               // Smooth Zoom Effect
               ValueListenableBuilder<bool>(

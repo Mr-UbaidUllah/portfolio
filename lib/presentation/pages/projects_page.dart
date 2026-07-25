@@ -15,7 +15,8 @@ class ProjectsPage extends StatefulWidget {
   State<ProjectsPage> createState() => _ProjectsPageState();
 }
 
-class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClientMixin {
+class _ProjectsPageState extends State<ProjectsPage>
+    with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<Offset> _mousePosition = ValueNotifier(Offset.zero);
 
@@ -79,13 +80,13 @@ class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClie
               physics: const BouncingScrollPhysics(),
               slivers: [
                 PortfolioNavbar(isMobile: isMobile, scaffoldKey: scaffoldKey),
-
                 SliverToBoxAdapter(
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1200),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 60),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0, vertical: 60),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -99,30 +100,43 @@ class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClie
                                 color: Colors.white,
                                 letterSpacing: -2,
                               ),
-                            ).animate().fadeIn(duration: 800.ms, curve: Curves.easeOutCubic).slideY(begin: 0.2),
-                            
+                            )
+                                .animate()
+                                .fadeIn(
+                                    duration: 800.ms,
+                                    curve: Curves.easeOutCubic)
+                                .slideY(begin: 0.2),
+
                             const SizedBox(height: 20),
-                            
+
                             // Glowing Divider
                             Container(
                               height: 4,
                               width: 100,
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF6C63FF), Color(0xFF00FF94)],
+                                  colors: [
+                                    Color(0xFF6C63FF),
+                                    Color(0xFF00FF94)
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(2),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF6C63FF).withValues(alpha: 0.5),
+                                    color: const Color(0xFF6C63FF)
+                                        .withValues(alpha: 0.5),
                                     blurRadius: 10,
                                   ),
                                 ],
                               ),
-                            ).animate().scaleX(begin: 0, alignment: Alignment.centerLeft, duration: 1.seconds, curve: Curves.easeOutBack),
-                            
+                            ).animate().scaleX(
+                                begin: 0,
+                                alignment: Alignment.centerLeft,
+                                duration: 1.seconds,
+                                curve: Curves.easeOutBack),
+
                             const SizedBox(height: 32),
-                            
+
                             // Subtitle
                             ConstrainedBox(
                               constraints: const BoxConstraints(maxWidth: 600),
@@ -134,8 +148,11 @@ class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClie
                                   height: 1.6,
                                 ),
                               ),
-                            ).animate().fadeIn(delay: 200.ms, duration: 800.ms).slideY(begin: 0.1),
-                            
+                            )
+                                .animate()
+                                .fadeIn(delay: 200.ms, duration: 800.ms)
+                                .slideY(begin: 0.1),
+
                             const SizedBox(height: 80),
 
                             // Project Grid with Staggered Reveal
@@ -159,13 +176,17 @@ class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClie
 
   Widget _buildProjectsGrid(bool isMobile, double screenWidth) {
     final projects = _getProjectData();
-    
+
     if (isMobile) {
       return Column(
-        children: projects.asMap().entries.map((entry) => Padding(
-          padding: const EdgeInsets.only(bottom: 32),
-          child: _animateProject(entry.value, entry.key),
-        )).toList(),
+        children: projects
+            .asMap()
+            .entries
+            .map((entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 32),
+                  child: _animateProject(entry.value, entry.key),
+                ))
+            .toList(),
       );
     }
 
@@ -181,7 +202,8 @@ class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClie
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 32,
         mainAxisSpacing: 32,
-        mainAxisExtent: 680, // Fixed: Use mainAxisExtent to prevent RenderFlex overflow on small desktops
+        mainAxisExtent:
+            680, // Fixed: Use mainAxisExtent to prevent RenderFlex overflow on small desktops
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) => _animateProject(projects[index], index),
@@ -189,8 +211,8 @@ class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClie
   }
 
   Widget _animateProject(Widget project, int index) {
-    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
-                             MediaQuery.of(context).disableAnimations;
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation ||
+        MediaQuery.of(context).disableAnimations;
     if (reduceMotion) return project;
 
     return project
@@ -204,22 +226,61 @@ class _ProjectsPageState extends State<ProjectsPage> with AutomaticKeepAliveClie
     return [
       ProjectCard(
         title: 'Fit Mind',
-        description: 'A comprehensive health and activity tracker. Features real-time syncing, custom biometric charts, and a highly interactive dashboard with micro-interactions.',
-        imagePath: 'assets/images/3D Developer Avatar.png',
+        description:
+            'A comprehensive health and activity tracker. Features real-time syncing, custom biometric charts, and a highly interactive dashboard with micro-interactions.',
+        imagePath: 'assets/images/fit_mind_pic.jpg',
         tags: const ['Flutter', 'Firebase', 'Provider', 'HealthKit API'],
         isFeatured: true,
         onLiveDemo: () {},
         onGitHub: () {},
       ),
       ProjectCard(
-        title: 'Blood Link',
-        description: 'A community-driven blood donation platform connecting donors with recipients in real-time. Includes location-based routing and secure messaging.',
-        imagePath: 'assets/images/3D Developer Avatar.png',
+        title: 'Life Link',
+        description:
+            'A community-driven blood donation platform connecting donors with recipients in real-time. Includes location-based routing and secure messaging.',
+        imagePath: 'assets/images/life_link_image.jpg',
         tags: const ['Flutter', 'Google Maps API', 'Node.js'],
         isPrivate: true,
         onLiveDemo: () {},
         onGitHub: () {},
       ),
+      ProjectCard(
+          title: "Factory Management System ",
+          description: ""
+              "A comprehensive health and activity tracker. Features real-time syncing, custom biometric charts, and a highly interactive dashboard with micro-interactions.",
+          imagePath: 'assets/images/factory.jpg',
+          tags: const ['Flutter', 'Rest Api', 'Node.js'],
+          onLiveDemo: () {},
+          onGitHub: () {}),
+      ProjectCard(
+        title: 'Dermatology Healthcare App',
+        description:
+            'Responsive appointment booking platform with doctor listings and dynamic filtering.',
+        imagePath: 'assets/images/derma_pic.jpg',
+        tags: ['Flutter', 'Firebase', 'Provider', 'HealthKit API'],
+        onLiveDemo: () {},
+        onGitHub: () {},
+      ),
+      ProjectCard(
+        title: 'Stallion Wear',
+        description:
+            'A modern fashion app with sleek and elegant fashion e-commerce app designed with smooth UI, modern animations, and a powerful user experience ',
+        imagePath: 'assets/images/fashion.jpg',
+        tags: ['Flutter, Firebase', 'Rest Api', 'Node.js' 'Provider'],
+        onLiveDemo: () {},
+        onGitHub: () {},
+      ),
+      ProjectCard(
+          title: 'Synapse',
+          description: 'High-performance, responsive app utilizing clean architecture for seamless state management.',
+          imagePath: 'assets/images/synape.jpg',
+          tags: [
+            'Flutter',
+            'Firebase',
+            'Provider',
+          ],
+          onLiveDemo: () {},
+          onGitHub: () {})
     ];
   }
 }
@@ -229,13 +290,13 @@ class _ProjectsBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
-                             MediaQuery.of(context).disableAnimations;
+    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation ||
+        MediaQuery.of(context).disableAnimations;
     return Stack(
       children: [
         // Base dark background
         Container(color: const Color(0xFF02020A)),
-        
+
         // Grid Pattern
         Opacity(
           opacity: 0.4,
@@ -252,14 +313,26 @@ class _ProjectsBackground extends StatelessWidget {
         Positioned(
           top: 200,
           left: -150,
-          child: _AuroraBlob(color: const Color(0xFF6C63FF).withValues(alpha: 0.07), size: 600),
-        ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveY(begin: 0, end: 100, duration: 10.seconds),
-        
+          child: _AuroraBlob(
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.07),
+              size: 600),
+        )
+            .animate(
+                onPlay: (c) =>
+                    reduceMotion ? c.stop() : c.repeat(reverse: true))
+            .moveY(begin: 0, end: 100, duration: 10.seconds),
+
         Positioned(
           bottom: 100,
           right: -200,
-          child: _AuroraBlob(color: const Color(0xFF00FF94).withValues(alpha: 0.05), size: 700),
-        ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveX(begin: 0, end: -100, duration: 15.seconds),
+          child: _AuroraBlob(
+              color: const Color(0xFF00FF94).withValues(alpha: 0.05),
+              size: 700),
+        )
+            .animate(
+                onPlay: (c) =>
+                    reduceMotion ? c.stop() : c.repeat(reverse: true))
+            .moveX(begin: 0, end: -100, duration: 15.seconds),
 
         // Floating particles
         if (!reduceMotion)
@@ -324,8 +397,8 @@ class _BackgroundCodeSnippets extends StatelessWidget {
               ),
             ),
           ),
-        ).animate(onPlay: (c) => c.repeat(reverse: true))
-         .moveY(begin: 0, end: 50, duration: (10 + random.nextInt(10)).seconds);
+        ).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(
+            begin: 0, end: 50, duration: (10 + random.nextInt(10)).seconds);
       }).toList(),
     );
   }
@@ -350,9 +423,10 @@ class _FloatingParticle extends StatelessWidget {
           shape: BoxShape.circle,
         ),
       ),
-    ).animate(onPlay: (c) => c.repeat(reverse: true))
-     .moveY(begin: 0, end: -100, duration: (5 + random.nextInt(10)).seconds)
-     .fadeIn(duration: 2.seconds)
-     .fadeOut(delay: 3.seconds, duration: 2.seconds);
+    )
+        .animate(onPlay: (c) => c.repeat(reverse: true))
+        .moveY(begin: 0, end: -100, duration: (5 + random.nextInt(10)).seconds)
+        .fadeIn(duration: 2.seconds)
+        .fadeOut(delay: 3.seconds, duration: 2.seconds);
   }
 }
