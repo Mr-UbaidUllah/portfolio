@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/app_breakpoints.dart';
 import 'available_badge.dart';
 
@@ -44,16 +45,15 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
     );
   }
 
-
-
-
-
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url)) throw 'Could not launch $url';
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isMobile = AppBreakpoints.isMobile(size.width);
-    // Fixed: Use math.min to ensure cardWidth never exceeds screen width
     final cardWidth = isMobile ? size.width * 0.95 : math.min(size.width * 0.9, 1100.0);
     final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
                              MediaQuery.of(context).disableAnimations;
@@ -106,7 +106,7 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                   child: Container(
-                    padding: EdgeInsets.all(isMobile ? 24 : 64),
+                    padding: EdgeInsets.all(isMobile ? 32 : 64),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0D0D1E).withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(40),
@@ -122,7 +122,13 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
             );
           },
           child: isMobile
-              ? Column(children: _buildContent(context, isMobile))
+              ? Column(
+                  children: [
+                    _buildImage(isMobile),
+                    const SizedBox(height: 48),
+                    ..._buildContent(context, isMobile),
+                  ],
+                )
               : Row(
                   children: [
                     Expanded(
@@ -151,14 +157,15 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
       _AnimatedGradientText(
         text: 'Ubaid Ullah',
         style: TextStyle(
-          fontSize: isMobile ? 36 : 72, // Reduced mobile font size
+          fontSize: isMobile ? 42 : 72,
           fontWeight: FontWeight.w900,
           letterSpacing: -1.5,
+          height: 1.1,
         ),
       ).animate().fadeIn(duration: 800.ms, delay: 200.ms).slideY(begin: 0.2),
       const SizedBox(height: 16),
       _TypewriterText(
-        texts: const ['Flutter Developer', 'Full Stack Developer', 'UI/UX Designer'],
+        texts: const ['Flutter Developer', 'Full-Stack Developer', 'UI/UX Designer'],
         style: TextStyle(
           color: const Color(0xFFBEB6FF),
           fontSize: isMobile ? 18 : 26,
@@ -168,61 +175,81 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
       ).animate().fadeIn(duration: 800.ms, delay: 400.ms),
       const SizedBox(height: 32),
       Text(
-        'Crafting seamless cross-platform mobile experiences with pixel-perfect design and robust backend integration.',
+        'I build high-performance mobile and web applications with Flutter, backed by clean architecture, modern UI, and scalable technologies.',
         textAlign: isMobile ? TextAlign.center : TextAlign.start,
         style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.6),
-          fontSize: isMobile ? 15 : 20, // Reduced mobile font size
+          color: Colors.white.withValues(alpha: 0.7),
+          fontSize: isMobile ? 16 : 20,
           height: 1.6,
           fontWeight: FontWeight.w300,
         ),
       ).animate().fadeIn(duration: 800.ms, delay: 600.ms).slideY(begin: 0.1),
-      const SizedBox(height: 48), // Adjusted height
+      const SizedBox(height: 48),
       isMobile
           ? Column(
               children: [
                 _PremiumButton(
-                  text: 'View Projects',
+                  text: 'View My Projects',
                   isPrimary: true,
                   onPressed: () => context.go('/projects'),
                 ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
                 const SizedBox(height: 16),
                 _PremiumButton(
-                  text: 'Contact Me',
+                  text: 'Let\'s Work Together',
                   isPrimary: false,
                   onPressed: () => context.go('/contact'),
                 ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2),
               ],
             )
           : Row(
-              children: _buildButtons(context)
-                  .expand((w) => [w, const SizedBox(width: 24)])
-                  .toList()
-                ..removeLast(),
+              children: [
+                _PremiumButton(
+                  text: 'View My Projects',
+                  isPrimary: true,
+                  onPressed: () => context.go('/projects'),
+                ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
+                const SizedBox(width: 24),
+                _PremiumButton(
+                  text: 'Let\'s Work Together',
+                  isPrimary: false,
+                  onPressed: () => context.go('/contact'),
+                ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2),
+              ],
             ),
-      if (isMobile) ...[const SizedBox(height: 56), _buildImage(isMobile)],
+      const SizedBox(height: 40),
+      _buildSocialLinks(isMobile),
     ];
   }
 
-  List<Widget> _buildButtons(BuildContext context) {
-    return [
-      _PremiumButton(
-        text: 'View Projects',
-        isPrimary: true,
-        onPressed: () => context.go('/projects'),
-      ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
-      _PremiumButton(
-        text: 'Contact Me',
-        isPrimary: false,
-        onPressed: () => context.go('/contact'),
-      ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2),
-    ];
+  Widget _buildSocialLinks(bool isMobile) {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
+      children: [
+        _SocialLinkIcon(
+          icon: Icons.link,
+          label: 'LinkedIn',
+          onTap: () => _launchUrl('https://www.linkedin.com/in/ubaid-ullah'),
+        ),
+        _SocialLinkIcon(
+          icon: Icons.code,
+          label: 'GitHub',
+          onTap: () => _launchUrl('https://github.com/Mr-UbaidUllah'),
+        ),
+        _SocialLinkIcon(
+          icon: Icons.alternate_email,
+          label: 'Email',
+          onTap: () => _launchUrl('mailto:ubaidullah.dev09@gmail.com'),
+        ),
+      ].animate(interval: 100.ms).fadeIn(delay: 1.2.seconds).slideY(begin: 0.2),
+    );
   }
 
   Widget _buildImage(bool isMobile) {
     final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
                              MediaQuery.of(context).disableAnimations;
-    final imageSize = isMobile ? 220.0 : 380.0; // Responsive image size
+    final imageSize = isMobile ? 220.0 : 380.0;
 
     return RepaintBoundary(
       child: AnimatedBuilder(
@@ -239,7 +266,6 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
-              // Orbiting Icons
               if (!isMobile && !reduceMotion) ...[
                 const _OrbitingIcon(icon: Icons.flutter_dash, angle: 0, color: Color(0xFF02539A)),
                 const _OrbitingIcon(icon: Icons.code, angle: 72, color: Color(0xFF6C63FF)),
@@ -248,7 +274,6 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
                 const _OrbitingIcon(icon: Icons.bolt, angle: 288, color: Colors.yellow),
               ],
       
-              // Animated glowing rings
               ...List.generate(2, (index) => 
                 Container(
                   width: imageSize + (index * 40),
@@ -300,6 +325,60 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
           ),
         ),
       ).animate().fadeIn(duration: 1.seconds, delay: 400.ms).scale(begin: const Offset(0.8, 0.8)),
+    );
+  }
+}
+
+class _SocialLinkIcon extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _SocialLinkIcon({required this.icon, required this.label, required this.onTap});
+
+  @override
+  State<_SocialLinkIcon> createState() => _SocialLinkIconState();
+}
+
+class _SocialLinkIconState extends State<_SocialLinkIcon> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: widget.label,
+      child: Focus(
+        onFocusChange: (focused) => setState(() => _isHovered = focused),
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: Semantics(
+            button: true,
+            label: 'Link to ${widget.label}',
+            child: InkWell(
+              onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: _isHovered ? const Color(0xFF6C63FF).withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _isHovered ? const Color(0xFF6C63FF).withValues(alpha: 0.5) : Colors.white10,
+                  ),
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: _isHovered ? Colors.white : Colors.white38,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

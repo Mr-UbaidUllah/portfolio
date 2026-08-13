@@ -15,8 +15,10 @@ class TerminalWidget extends StatefulWidget {
 
 class _TerminalWidgetState extends State<TerminalWidget> {
   final List<TerminalLineData> _history = [
-    TerminalLineData(command: 'whoami', response: 'Ubaid Ullah — Senior Flutter Engineer & UI/UX Specialist'),
-    TerminalLineData(command: 'ls --welcome', response: 'Type "help" to see available commands or "updates" for latest fixes.'),
+    TerminalLineData(command: 'whoami', response: 'Ubaid Ullah'),
+    TerminalLineData(command: 'role', response: 'Flutter Developer • Full-Stack Developer • UI/UX Designer'),
+    TerminalLineData(command: 'stack', response: 'Flutter • Dart • Firebase • Node.js • TypeScript'),
+    TerminalLineData(command: 'status', response: 'Available for Work'),
   ];
 
   final TextEditingController _inputController = TextEditingController();
@@ -43,17 +45,16 @@ class _TerminalWidgetState extends State<TerminalWidget> {
     bool clear = false;
 
     if (cmd == 'help') {
-      response = 'Available commands: help, updates, about, skills, projects, experience, contact, resume, github, linkedin, clear, ls, pwd, whoami, cat [file], echo [msg]';
+      response = 'Available commands: help, updates, about, skills, projects, experience, contact, resume, github, linkedin, clear, ls, pwd, whoami, role, stack, status, cat [file]';
     } else if (cmd == 'updates' || cmd == 'changelog') {
       response = '''
 [LATEST UPDATES]
-• FIXED: Pixel overflow issues on Mobile/Tablet views.
-• FIXED: Drawer navigation components visibility & animations.
-• IMPROVED: Responsive scaling for Hero Portfolio Card.
-• IMPROVED: Navigation bar layout for smaller screens.
-• UPDATED: Social links in footer with better wrapping support.''';
+• OPTIMIZED: Home Screen information hierarchy for recruiters.
+• ADDED: Credibility stats and technology stack preview.
+• IMPROVED: CTA hierarchy and mobile responsiveness.
+• UPDATED: Social link accessibility and hit targets.''';
     } else if (cmd == 'about') {
-      response = 'I am a Senior Flutter Developer focused on building high-performance, beautiful mobile and web applications with premium UI and modern architecture.';
+      response = 'I am a Flutter-focused developer dedicated to building high-performance mobile and web applications with clean architecture and premium UI.';
     } else if (cmd == 'skills' || cmd == 'ls skills') {
       context.go('/skills');
       response = 'Navigating to Skills...';
@@ -78,30 +79,22 @@ class _TerminalWidgetState extends State<TerminalWidget> {
     } else if (cmd == 'clear') {
       clear = true;
     } else if (cmd == 'ls') {
-      response = 'home  projects  experience  skills  contact  ubaidullah_CV.pdf';
+      response = 'home  projects  experience  skills  contact  resume.pdf';
     } else if (cmd == 'pwd') {
       response = '/users/ubaid/portfolio${GoRouterState.of(context).uri.path}';
     } else if (cmd == 'whoami') {
-      response = 'ubaid_ullah (Senior Flutter Engineer)';
-    } else if (cmd.startsWith('echo ')) {
-      response = input.substring(5);
+      response = 'Ubaid Ullah';
+    } else if (cmd == 'role') {
+      response = 'Flutter Developer • Full-Stack Developer • UI/UX Designer';
+    } else if (cmd == 'stack') {
+      response = 'Flutter • Dart • Firebase • Node.js • TypeScript • MySQL';
+    } else if (cmd == 'status') {
+      response = 'Available for Work';
     } else if (cmd.startsWith('cat ')) {
       final file = cmd.substring(4).trim();
-      if (file == 'resume' || file == 'ubaidullah_CV.pdf') {
+      if (file == 'resume' || file == 'resume.pdf') {
         ResumePreviewModal.show(context);
-        response = 'Reading ubaidullah_CV.pdf...';
-      } else if (file == 'skills') {
-        context.go('/skills');
-        response = 'Opening skills section...';
-      } else if (file == 'projects') {
-        context.go('/projects');
-        response = 'Opening projects section...';
-      } else if (file == 'experience') {
-        context.go('/experience');
-        response = 'Opening experience section...';
-      } else if (file == 'contact') {
-        context.go('/contact');
-        response = 'Opening contact section...';
+        response = 'Reading resume.pdf...';
       } else {
         response = 'cat: $file: No such file or directory';
       }
@@ -145,8 +138,8 @@ class _TerminalWidgetState extends State<TerminalWidget> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
-              width: 600,
-              height: 400,
+              width: 700,
+              height: 450,
               decoration: BoxDecoration(
                 color: const Color(0xFF0F172A).withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(16),
@@ -160,7 +153,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
                   _buildHeader(),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(20.0),
                       child: ListView(
                         controller: _scrollController,
                         physics: const BouncingScrollPhysics(),
@@ -182,7 +175,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
@@ -197,7 +190,7 @@ class _TerminalWidgetState extends State<TerminalWidget> {
           const Expanded(
             child: Center(
               child: Text(
-                'ubaid — zsh — 80x24',
+                'ubaid — portfolio — 80x24',
                 style: TextStyle(color: Colors.white38, fontSize: 11, fontFamily: 'monospace'),
               ),
             ),
