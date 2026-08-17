@@ -288,8 +288,8 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
         _buildContactCard(
           Icons.phone_outlined,
           "Phone",
-          "+92 312 3456789",
-          () => _launchUrl('tel:+923123456789'),
+          "+92 318 44454 88",
+          () => _launchUrl('tel:+923184445488'),
         ),
         _buildContactCard(
           Icons.location_on_outlined,

@@ -207,7 +207,8 @@ class ResumePreviewModal extends StatelessWidget {
           const SizedBox(width: 16),
           ElevatedButton.icon(
             onPressed: () {
-              // Existing download functionality placeholder
+              final bytes = rootBundle.load('assets/files/ubaidullah_CV.pdf');
+
             },
             icon: const Icon(Icons.download_rounded),
             label: const Text('Download Resume'),
