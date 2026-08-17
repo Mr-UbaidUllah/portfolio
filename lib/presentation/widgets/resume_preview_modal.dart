@@ -144,7 +144,7 @@ class ResumePreviewModal extends StatelessWidget {
       const SizedBox(height: 24),
       _buildSection('Experience Highlights', '• Built multi-tenant Flutter apps for 1M+ users.\n• Achieved 60 FPS on low-end devices via performance optimization.\n• Led cross-functional teams to deliver production-ready apps.'),
       const SizedBox(height: 24),
-      _buildSection('Education & Certifications', '• BS in Computer Science - University of Peshawar (Expected 2026)\n• Google Certified Flutter Developer\n• Advanced UI/UX Design Certification'),
+      _buildSection('Education & Certifications', '• BS in Computer Science - University of Peshawar \n• Google Certified Flutter Developer\n• Advanced UI/UX Design Certification'),
       if (isMobile) ...[
         const SizedBox(height: 32),
         _buildPreviewPlaceholder(),
