@@ -211,7 +211,7 @@ class CustomDrawer extends StatelessWidget {
           _SocialIconButton(
             icon: Icons.link,
             index: 0,
-            onTap: () => _launchUrl('https://www.linkedin.com/in/ubaid-ullah'),
+            onTap: () => _launchUrl('https://www.linkedin.com/in/ubaid-ullah-84b442285/'),
             reduceMotion: reduceMotion,
             tooltip: 'LinkedIn',
           ),

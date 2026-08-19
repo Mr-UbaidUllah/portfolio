@@ -436,7 +436,7 @@ class _ContactPageState extends State<ContactPage> with AutomaticKeepAliveClient
           runSpacing: 24,
           children: [
             _buildSocialButton("GitHub", () => _launchUrl('https://github.com/Mr-UbaidUllah')),
-            _buildSocialButton("LinkedIn", () => _launchUrl('https://linkedin.com/in/ubaid-ullah')),
+            _buildSocialButton("LinkedIn", () => _launchUrl('https://www.linkedin.com/in/ubaid-ullah-84b442285/')),
             _buildSocialButton("Twitter", () => _launchUrl('https://twitter.com')),
             _buildSocialButton("Instagram", () => _launchUrl('https://instagram.com')),
           ],

@@ -230,7 +230,7 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
         _SocialLinkIcon(
           icon: Icons.link,
           label: 'LinkedIn',
-          onTap: () => _launchUrl('https://www.linkedin.com/in/ubaid-ullah'),
+          onTap: () => _launchUrl('https://www.linkedin.com/in/ubaid-ullah-84b442285/'),
         ),
         _SocialLinkIcon(
           icon: Icons.code,

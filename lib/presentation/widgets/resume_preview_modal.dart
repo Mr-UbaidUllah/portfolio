@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ResumePreviewModal extends StatelessWidget {
   const ResumePreviewModal({super.key});
@@ -206,9 +207,13 @@ class ResumePreviewModal extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           ElevatedButton.icon(
-            onPressed: () {
-              final bytes = rootBundle.load('assets/files/ubaidullah_CV.pdf');
-
+            onPressed: () async {
+              final Uri url = Uri.parse('assets/docs/ubaidullah_CV.pdf');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url);
+              } else {
+                debugPrint('Could not launch $url');
+              }
             },
             icon: const Icon(Icons.download_rounded),
             label: const Text('Download Resume'),

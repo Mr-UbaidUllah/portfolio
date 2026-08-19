@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/app_breakpoints.dart';
 import '../widgets/portfolio_navbar.dart';
 import '../widgets/custom_drawer.dart';
@@ -28,6 +29,13 @@ class _ProjectsPageState extends State<ProjectsPage>
     _scrollController.dispose();
     _mousePosition.dispose();
     super.dispose();
+  }
+
+  Future<void> _launchUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
+    }
   }
 
   @override
@@ -232,7 +240,7 @@ class _ProjectsPageState extends State<ProjectsPage>
         tags: const ['Flutter', 'Firebase', 'Provider', 'HealthKit API'],
         isFeatured: true,
         onLiveDemo: () {},
-        onGitHub: () {},
+        onGitHub: () => _launchUrl('https://github.com/Mr-UbaidUllah/fit_mind'),
       ),
       ProjectCard(
         title: 'Life Link',
@@ -242,7 +250,7 @@ class _ProjectsPageState extends State<ProjectsPage>
         tags: const ['Flutter', 'Google Maps API', 'Node.js'],
         isPrivate: true,
         onLiveDemo: () {},
-        onGitHub: () {},
+        onGitHub: () => _launchUrl('https://github.com/Mr-UbaidUllah/life_link'),
       ),
       ProjectCard(
           title: "Factory Management System ",
@@ -251,7 +259,7 @@ class _ProjectsPageState extends State<ProjectsPage>
           imagePath: 'assets/images/factory.jpg',
           tags: const ['Flutter', 'Rest Api', 'Node.js'],
           onLiveDemo: () {},
-          onGitHub: () {}),
+          onGitHub: () => _launchUrl('https://github.com/Mr-UbaidUllah/Marbal-Factory-Managemnet')),
       ProjectCard(
         title: 'Dermatology Healthcare App',
         description:
@@ -268,7 +276,7 @@ class _ProjectsPageState extends State<ProjectsPage>
         imagePath: 'assets/images/fashion.jpg',
         tags: ['Flutter, Firebase', 'Rest Api', 'Node.js' 'Provider'],
         onLiveDemo: () {},
-        onGitHub: () {},
+        onGitHub: () => _launchUrl('https://github.com/Mr-UbaidUllah/stalllion_wear'),
       ),
       ProjectCard(
           title: 'Synapse',
@@ -280,7 +288,7 @@ class _ProjectsPageState extends State<ProjectsPage>
             'Provider',
           ],
           onLiveDemo: () {},
-          onGitHub: () {})
+          onGitHub: () => _launchUrl('https://github.com/Mr-UbaidUllah/synapse'))
     ];
   }
 }
