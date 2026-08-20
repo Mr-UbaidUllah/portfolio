@@ -149,33 +149,49 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
 
   List<Widget> _buildContent(BuildContext context, bool isMobile) {
     return [
-      const AvailableBadge()
-          .animate()
-          .fadeIn(duration: 600.ms)
-          .slideX(begin: -0.2, curve: Curves.easeOutCubic),
-      const SizedBox(height: 32),
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: const Color(0xFF34D399),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF34D399).withValues(alpha: 0.4),
+                  blurRadius: 8,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+          ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(begin: const Offset(1, 1), end: const Offset(1.5, 1.5), duration: 1.seconds),
+          const SizedBox(width: 12),
+          Text(
+            'OPEN TO FLUTTER & FULL-STACK ROLES',
+            style: TextStyle(
+              color: const Color(0xFF38BDF8),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
+          ),
+        ],
+      ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.2, curve: Curves.easeOutCubic),
+      const SizedBox(height: 24),
       _AnimatedGradientText(
-        text: 'Ubaid Ullah',
+        text: 'Flutter Developer building cross-platform apps end to end.',
         style: TextStyle(
-          fontSize: isMobile ? 42 : 72,
+          fontSize: isMobile ? 36 : 56,
           fontWeight: FontWeight.w900,
           letterSpacing: -1.5,
           height: 1.1,
         ),
       ).animate().fadeIn(duration: 800.ms, delay: 200.ms).slideY(begin: 0.2),
-      const SizedBox(height: 16),
-      _TypewriterText(
-        texts: const ['Flutter Developer', 'Full-Stack Developer', 'UI/UX Designer'],
-        style: TextStyle(
-          color: const Color(0xFFBEB6FF),
-          fontSize: isMobile ? 18 : 26,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 1.5,
-        ),
-      ).animate().fadeIn(duration: 800.ms, delay: 400.ms),
-      const SizedBox(height: 32),
+      const SizedBox(height: 24),
       Text(
-        'I build high-performance mobile and web applications with Flutter, backed by clean architecture, modern UI, and scalable technologies.',
+        '3+ years shipping mobile apps across healthcare, e-commerce, fitness and logistics — architecture through deployment, Flutter front end to Node.js & Firebase backend.',
         textAlign: isMobile ? TextAlign.center : TextAlign.start,
         style: TextStyle(
           color: Colors.white.withValues(alpha: 0.7),
@@ -189,13 +205,13 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
           ? Column(
               children: [
                 _PremiumButton(
-                  text: 'View My Projects',
+                  text: 'View Projects',
                   isPrimary: true,
                   onPressed: () => context.go('/projects'),
                 ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
                 const SizedBox(height: 16),
                 _PremiumButton(
-                  text: 'Let\'s Work Together',
+                  text: 'Get in touch',
                   isPrimary: false,
                   onPressed: () => context.go('/contact'),
                 ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2),
@@ -204,13 +220,13 @@ class _PortfolioCardState extends State<PortfolioCard> with SingleTickerProvider
           : Row(
               children: [
                 _PremiumButton(
-                  text: 'View My Projects',
+                  text: 'View Projects',
                   isPrimary: true,
                   onPressed: () => context.go('/projects'),
                 ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
                 const SizedBox(width: 24),
                 _PremiumButton(
-                  text: 'Let\'s Work Together',
+                  text: 'Get in touch',
                   isPrimary: false,
                   onPressed: () => context.go('/contact'),
                 ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2),
@@ -470,83 +486,6 @@ class _AnimatedGradientTextState extends State<_AnimatedGradientText> with Singl
           child: Text(widget.text, style: widget.style.copyWith(color: Colors.white)),
         );
       },
-    );
-  }
-}
-
-class _TypewriterText extends StatefulWidget {
-  final List<String> texts;
-  final TextStyle style;
-
-  const _TypewriterText({required this.texts, required this.style});
-
-  @override
-  State<_TypewriterText> createState() => _TypewriterTextState();
-}
-
-class _TypewriterTextState extends State<_TypewriterText> {
-  int _textIndex = 0;
-  int _charIndex = 0;
-  bool _isDeleting = false;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _type());
-  }
-
-  void _type() {
-    if (!mounted) return;
-    final bool reduceMotion = MediaQuery.of(context).accessibleNavigation || 
-                             MediaQuery.of(context).disableAnimations;
-    
-    if (reduceMotion) {
-      setState(() {
-        _charIndex = widget.texts[_textIndex].length;
-      });
-      return;
-    }
-
-    final currentText = widget.texts[_textIndex];
-    setState(() {
-      if (_isDeleting) {
-        _charIndex--;
-      } else {
-        _charIndex++;
-      }
-    });
-
-    Duration delay = const Duration(milliseconds: 100);
-    
-    if (!_isDeleting && _charIndex == currentText.length) {
-      delay = const Duration(seconds: 2);
-      _isDeleting = true;
-    } else if (_isDeleting && _charIndex == 0) {
-      _isDeleting = false;
-      _textIndex = (_textIndex + 1) % widget.texts.length;
-      delay = const Duration(milliseconds: 500);
-    } else if (_isDeleting) {
-      delay = const Duration(milliseconds: 50);
-    }
-
-    _timer = Timer(delay, _type);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Rotating roles: ${widget.texts[_textIndex]}',
-      child: Text(
-        '${widget.texts[_textIndex].substring(0, _charIndex)}_',
-        style: widget.style,
-      ),
     );
   }
 }

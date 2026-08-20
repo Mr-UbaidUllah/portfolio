@@ -111,7 +111,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         opacity: 0.1,
                         child: Transform.scale(
                           scale: 1.3,
-                          child: const TerminalWidget(),
                         ),
                       ),
                     ),

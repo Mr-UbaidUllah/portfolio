@@ -31,6 +31,16 @@ class _ExperiencePageState extends State<ExperiencePage> with AutomaticKeepAlive
     super.dispose();
   }
 
+  Widget _buildSectionDivider() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 80),
+      child: Divider(
+        color: Colors.white.withValues(alpha: 0.05),
+        thickness: 1,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -97,17 +107,17 @@ class _ExperiencePageState extends State<ExperiencePage> with AutomaticKeepAlive
                             // --- Hero Header Section ---
                             _buildHeroHeader(isMobile),
 
-                            const SizedBox(height: 100),
+                            _buildSectionDivider(),
 
                             // --- Achievement Quick Highlights ---
                             _buildQuickStats(isMobile),
 
-                            const SizedBox(height: 120),
+                            _buildSectionDivider(),
 
                             // --- Vertical Experience Timeline ---
                             _buildExperienceTimeline(),
 
-                            const SizedBox(height: 150),
+                            _buildSectionDivider(),
 
                             // --- Call To Action Section ---
                             _buildCTA(context, isMobile),
@@ -252,9 +262,9 @@ class _ExperiencePageState extends State<ExperiencePage> with AutomaticKeepAlive
         ],
       ),
       const ExperienceItem(
-        title: 'Mobile Application Developer',
+        title: 'Independent Flutter & Full-Stack Developer',
         company: 'Freelance / Agency',
-        period: 'June 2023 - Dec 2023',
+        period: 'June 2022 - Present',
         location: 'Global / Hybrid',
         employmentType: 'Contract',
         technologies: ['Flutter', 'BLE', 'IoT', 'REST API', 'Provider', 'Figma', 'Node.js', 'PostgreSQL'],
@@ -271,7 +281,7 @@ class _ExperiencePageState extends State<ExperiencePage> with AutomaticKeepAlive
       ),
       const ExperienceItem(
         title: 'Computer Science Scholar',
-        company: 'University of Peshawar',
+        company: 'University of Engineering & Technology Peshawar',
         period: '2022 - 2026',
         location: 'Peshawar, PK',
         employmentType: 'Education',
@@ -465,71 +475,32 @@ class _ExperienceBackground extends StatelessWidget {
               painter: GridPainter(),
             ),
           ),
-          // Large blurred aurora blobs
-          Positioned(
-            top: -200,
-            right: -100,
-            child: _AuroraBlob(color: const Color(0xFF6C63FF).withValues(alpha: 0.08), size: 900),
-          ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveY(begin: 0, end: 120, duration: 10.seconds),
-          
-          Positioned(
-            bottom: -150,
-            left: -250,
-            child: _AuroraBlob(color: const Color(0xFF00FF94).withValues(alpha: 0.05), size: 1000),
-          ).animate(onPlay: (c) => reduceMotion ? c.stop() : c.repeat(reverse: true)).moveX(begin: 0, end: 180, duration: 15.seconds),
-          
-          // Floating decorative particles/stars
-          if (!reduceMotion) const _FloatingStars(),
+          // Large blurred aurora
+          if (!reduceMotion)
+            Positioned(
+              top: -200,
+              right: -200,
+              child: Container(
+                width: 800,
+                height: 800,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFF6C63FF).withValues(alpha: 0.15),
+                      const Color(0xFF6C63FF).withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+              ).animate(onPlay: (c) => c.repeat(reverse: true)).move(
+                begin: Offset.zero,
+                end: const Offset(-100, 100),
+                duration: 10.seconds,
+                curve: Curves.easeInOut,
+              ),
+            ),
         ],
       ),
-    );
-  }
-}
-
-class _AuroraBlob extends StatelessWidget {
-  final Color color;
-  final double size;
-
-  const _AuroraBlob({required this.color, required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [color, color.withValues(alpha: 0)],
-        ),
-      ),
-    );
-  }
-}
-
-class _FloatingStars extends StatelessWidget {
-  const _FloatingStars();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: List.generate(25, (index) {
-        return Positioned(
-          top: (index * 137.5) % 1000,
-          left: (index * 243.7) % 1500,
-          child: Container(
-            width: 2.5,
-            height: 2.5,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: Colors.white.withValues(alpha: 0.2), blurRadius: 5),
-              ],
-            ),
-          ).animate(onPlay: (c) => c.repeat(reverse: true)).fadeIn(duration: (3 + (index % 4)).seconds).scale(begin: const Offset(0.4, 0.4), end: const Offset(1.8, 1.8)),
-        );
-      }),
     );
   }
 }
